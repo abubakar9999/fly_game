@@ -48,6 +48,12 @@ enum GameDifficulty {
   hard,
 }
 
+/// Primary game modes: classic star arcade vs. educational alphabet quest.
+enum GamePlayMode {
+  arcade,
+  alphabetQuest,
+}
+
 class DifficultyConfig {
   final int initialLives;
   final double baseFallSpeed;

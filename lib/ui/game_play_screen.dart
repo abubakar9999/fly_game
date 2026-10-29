@@ -2,8 +2,11 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../game/config.dart';
+import '../game/models/alphabet_data.dart';
 import '../game/space_game.dart';
 import '../services/storage_service.dart';
+import 'alphabet_hud_overlay.dart';
+import 'alphabet_win_overlay.dart';
 import 'hud_overlay.dart';
 import 'pause_overlay.dart';
 import 'result_overlay.dart';
@@ -12,11 +15,15 @@ import 'result_overlay.dart';
 class GamePlayScreen extends StatefulWidget {
   final GameDifficulty difficulty;
   final StorageService storageService;
+  final GamePlayMode gameMode;
+  final AlphabetType alphabetType;
 
   const GamePlayScreen({
     super.key,
     required this.difficulty,
     required this.storageService,
+    this.gameMode = GamePlayMode.arcade,
+    this.alphabetType = AlphabetType.english,
   });
 
   @override
@@ -29,7 +36,11 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
   @override
   void initState() {
     super.initState();
-    _game = SpaceGame(difficulty: widget.difficulty);
+    _game = SpaceGame(
+      difficulty: widget.difficulty,
+      gameMode: widget.gameMode,
+      alphabetType: widget.alphabetType,
+    );
 
     _initializeSettings();
 
@@ -62,11 +73,15 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
       backgroundColor: const Color(0xFF0B0E14),
       body: GameWidget<SpaceGame>(
         game: _game,
-        initialActiveOverlays: const ['hud'],
+        initialActiveOverlays: [
+          widget.gameMode == GamePlayMode.alphabetQuest ? 'alphabet_hud' : 'hud',
+        ],
         overlayBuilderMap: {
           'hud': (context, game) => HudOverlay(game: game),
+          'alphabet_hud': (context, game) => AlphabetHudOverlay(game: game),
           'pause': (context, game) => PauseOverlay(game: game),
           'result': (context, game) => ResultOverlay(game: game),
+          'alphabet_win': (context, game) => AlphabetWinOverlay(game: game),
         },
       ),
     );

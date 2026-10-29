@@ -4,7 +4,9 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../services/tilt_service.dart';
+import '../services/voice_service.dart';
 import 'components/collect_effect.dart';
+import 'components/letter_bubble.dart';
 import 'components/meteor.dart';
 import 'components/planet.dart';
 import 'components/rocket.dart';
@@ -12,24 +14,32 @@ import 'components/spawner.dart';
 import 'components/star.dart';
 import 'components/star_background.dart';
 import 'config.dart';
+import 'managers/alphabet_manager.dart';
 import 'managers/audio_manager.dart';
 import 'managers/score_manager.dart';
+import 'models/alphabet_data.dart';
 
-/// Main Flame game loop for Space Journey.
+/// Main Flame game loop for Space Journey & Alphabet Astronaut.
 class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
   final TiltService tiltService = TiltService();
   final StarBackground starBackground = StarBackground();
   final Rocket rocket = Rocket();
   final AudioManager audioManager = AudioManager();
   final ScoreManager scoreManager = ScoreManager();
+  final VoiceService voiceService = VoiceService();
+  final AlphabetManager alphabetManager = AlphabetManager();
   Spawner? spawner;
 
   GameDifficulty difficulty = GameDifficulty.medium;
   DifficultyConfig difficultyConfig = DifficultyConfig.medium;
+  GamePlayMode gameMode = GamePlayMode.arcade;
+
   double speedMultiplier = 1.0;
   double _difficultyTimer = 0.0;
   bool isPlaying = false;
   bool isInitiallyMuted = false;
+
+  bool get isLearningMode => gameMode == GamePlayMode.alphabetQuest;
 
   // Screen shake state
   final math.Random _random = math.Random();
@@ -41,6 +51,8 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
   SpaceGame({
     GameDifficulty? difficulty,
     bool? isInitiallyMuted,
+    GamePlayMode? gameMode,
+    AlphabetType? alphabetType,
   }) {
     if (difficulty != null) {
       this.difficulty = difficulty;
@@ -49,6 +61,12 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     }
     if (isInitiallyMuted != null) {
       this.isInitiallyMuted = isInitiallyMuted;
+    }
+    if (gameMode != null) {
+      this.gameMode = gameMode;
+    }
+    if (alphabetType != null) {
+      alphabetManager.setType(alphabetType);
     }
   }
 
@@ -61,6 +79,9 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
 
     audioManager.setMuted(isInitiallyMuted);
     audioManager.startBgm();
+
+    voiceService.isMuted = isInitiallyMuted;
+    await voiceService.init();
 
     tiltService.start();
 
@@ -116,6 +137,49 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     }
   }
 
+  /// Handles collision between the player rocket and a falling alphabet bubble.
+  void handleLetterHit(LetterBubble bubble) {
+    if (!isPlaying) return;
+
+    final targetHit = alphabetManager.checkHit(bubble.letter);
+    if (targetHit) {
+      // Correct target letter hit!
+      scoreManager.addScore(10);
+      audioManager.playCollect();
+      voiceService.speakLetter(bubble.letter, type: alphabetManager.type);
+
+      add(
+        CollectEffect(
+          position: bubble.position.clone(),
+          particleColor: const Color(0xFFFFD700),
+          particleCount: 18,
+        ),
+      );
+
+      bubble.removeFromParent();
+
+      if (alphabetManager.isCompleted) {
+        completeAlphabetRun();
+      }
+    } else {
+      // Distractor hit: gentle playful sound without losing lives
+      audioManager.playTap();
+      bubble.removeFromParent();
+    }
+  }
+
+  /// Celebrates completing the alphabet sequence!
+  void completeAlphabetRun() {
+    isPlaying = false;
+    spawner?.stopSpawning();
+    audioManager.pauseBgm();
+    voiceService.speakText('Awesome job! Alphabet completed!');
+
+    overlays.remove('hud');
+    overlays.remove('alphabet_hud');
+    overlays.add('alphabet_win');
+  }
+
   /// Triggers a brief screen shake effect.
   void shakeScreen() {
     _shakeTimer = 0.35;
@@ -127,6 +191,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     spawner?.stopSpawning();
     audioManager.pauseBgm();
     overlays.remove('hud');
+    overlays.remove('alphabet_hud');
     overlays.add('result');
   }
 
@@ -159,20 +224,32 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     children.whereType<Star>().forEach((s) => s.removeFromParent());
     children.whereType<Planet>().forEach((p) => p.removeFromParent());
     children.whereType<Meteor>().forEach((m) => m.removeFromParent());
+    children.whereType<LetterBubble>().forEach((l) => l.removeFromParent());
     children.whereType<CollectEffect>().forEach((c) => c.removeFromParent());
 
     // Reset player rocket and score
     rocket.resetPosition();
     scoreManager.reset(initialLives: difficultyConfig.initialLives);
 
-    // Reset spawner
+    // Reset spawner and alphabet state
     spawner?.reset();
+    if (isLearningMode) {
+      alphabetManager.reset();
+    }
     isPlaying = true;
 
     // Reset overlays
     overlays.remove('result');
     overlays.remove('pause');
-    overlays.add('hud');
+    overlays.remove('alphabet_win');
+
+    if (isLearningMode) {
+      overlays.remove('hud');
+      overlays.add('alphabet_hud');
+    } else {
+      overlays.remove('alphabet_hud');
+      overlays.add('hud');
+    }
 
     resumeEngine();
     audioManager.resumeBgm();
@@ -230,6 +307,8 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     tiltService.dispose();
     scoreManager.dispose();
     audioManager.dispose();
+    alphabetManager.dispose();
+    voiceService.stop();
     super.onDetach();
   }
 }

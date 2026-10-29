@@ -105,8 +105,10 @@ class AudioManager {
       if (_isMusicPlaying) {
         FlameAudio.bgm.stop().catchError((_) {});
         _isMusicPlaying = false;
+        try {
+          FlameAudio.bgm.dispose();
+        } catch (_) {}
       }
-      FlameAudio.bgm.dispose();
     } catch (_) {}
   }
 }

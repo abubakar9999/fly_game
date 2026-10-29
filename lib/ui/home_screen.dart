@@ -4,6 +4,7 @@ import '../app/strings.dart';
 import '../game/config.dart';
 import '../services/storage_service.dart';
 import 'game_play_screen.dart';
+import 'learning_world_dialog.dart';
 
 /// Main menu screen with difficulty selector and settings.
 class HomeScreen extends StatefulWidget {
@@ -87,6 +88,16 @@ class _HomeScreenState extends State<HomeScreen> {
       // Refresh high score when returning to menu
       _loadSettings();
     });
+  }
+
+  void _openLearningMode() {
+    showDialog(
+      context: context,
+      builder: (_) => LearningWorldDialog(
+        storageService: widget.storageService,
+        difficulty: _selectedDifficulty,
+      ),
+    );
   }
 
   @override
@@ -184,36 +195,75 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
-                  // Big Play Button (min 64px height)
-                  SizedBox(
-                    width: double.infinity,
-                    height: 64.0,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00E676),
-                        foregroundColor: Colors.black87,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24.0),
-                        ),
-                        elevation: 8.0,
-                      ),
-                      onPressed: _startGame,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.play_arrow_rounded, size: 36.0),
-                          const SizedBox(width: 8.0),
-                          Text(
-                            GameStrings.play,
-                            style: const TextStyle(
-                              fontSize: 26.0,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
+                  // Mode Action Buttons: Arcade Play & Alphabet Learning
+                  Column(
+                    children: [
+                      // Big Play Button (min 60px height)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 60.0,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00E676),
+                            foregroundColor: Colors.black87,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(22.0),
                             ),
+                            elevation: 8.0,
                           ),
-                        ],
+                          onPressed: _startGame,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.play_arrow_rounded, size: 36.0),
+                              const SizedBox(width: 8.0),
+                              Text(
+                                GameStrings.play,
+                                style: const TextStyle(
+                                  fontSize: 24.0,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 12.0),
+
+                      // Alphabet Quest Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56.0,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7C4DFF),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                            elevation: 6.0,
+                          ),
+                          onPressed: _openLearningMode,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.school_rounded, size: 28.0),
+                              const SizedBox(width: 8.0),
+                              Text(
+                                GameStrings.currentLanguage == AppLanguage.bn
+                                    ? 'বর্ণমালা মিশন 🔤'
+                                    : 'Alphabet Quest 🔤',
+                                style: const TextStyle(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
 
                   // Bottom Settings Bar (Language & Mute)
