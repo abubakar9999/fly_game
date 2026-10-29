@@ -10,6 +10,7 @@ import 'components/collect_effect.dart';
 import 'components/letter_bubble.dart';
 import 'components/meteor.dart';
 import 'components/planet.dart';
+import 'components/power_up_item.dart';
 import 'components/rocket.dart';
 import 'components/spawner.dart';
 import 'components/star.dart';
@@ -19,6 +20,7 @@ import 'managers/alphabet_manager.dart';
 import 'managers/audio_manager.dart';
 import 'managers/score_manager.dart';
 import 'models/alphabet_data.dart';
+import 'models/power_up_type.dart';
 
 /// Main Flame game loop for Space Journey & Alphabet Astronaut.
 class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
@@ -49,7 +51,36 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
   double _shakeTimer = 0.0;
   final Vector2 _shakeOffset = Vector2.zero();
 
-  double get currentFallSpeed => difficultyConfig.baseFallSpeed * speedMultiplier;
+  // Power-up durations & state
+  double magnetTimer = 0.0;
+  double slowMoTimer = 0.0;
+
+  bool get isMagnetActive => magnetTimer > 0;
+  bool get isSlowMoActive => slowMoTimer > 0;
+
+  double get currentFallSpeed {
+    final base = difficultyConfig.baseFallSpeed * speedMultiplier;
+    return isSlowMoActive ? base * 0.55 : base;
+  }
+
+  void activatePowerUp(PowerUpType type) {
+    audioManager.playPowerUp();
+    try {
+      HapticFeedback.mediumImpact();
+    } catch (_) {}
+
+    switch (type) {
+      case PowerUpType.magnet:
+        magnetTimer = 6.0;
+        break;
+      case PowerUpType.shield:
+        rocket.hasShield = true;
+        break;
+      case PowerUpType.slowMo:
+        slowMoTimer = 6.0;
+        break;
+    }
+  }
 
   SpaceGame({
     GameDifficulty? difficulty,
@@ -256,11 +287,15 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     children.whereType<Planet>().forEach((p) => p.removeFromParent());
     children.whereType<Meteor>().forEach((m) => m.removeFromParent());
     children.whereType<LetterBubble>().forEach((l) => l.removeFromParent());
+    children.whereType<PowerUpItem>().forEach((pu) => pu.removeFromParent());
     children.whereType<CollectEffect>().forEach((c) => c.removeFromParent());
 
-    // Reset player rocket and score
+    // Reset player rocket, power-ups, and score
     rocket.resetPosition();
     rocket.resetCombo();
+    rocket.hasShield = false;
+    magnetTimer = 0.0;
+    slowMoTimer = 0.0;
     scoreManager.reset(initialLives: difficultyConfig.initialLives);
 
     // Reset spawner and alphabet state
@@ -305,6 +340,30 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     }
 
     if (!isPlaying) return;
+
+    // Power-up updates
+    if (magnetTimer > 0) {
+      magnetTimer -= dt;
+      final rocketCenter = rocket.position;
+      for (final letter in children.whereType<LetterBubble>()) {
+        if (letter.isTarget) {
+          final diff = rocketCenter - letter.position;
+          if (diff.length < 320.0 && diff.length > 5.0) {
+            letter.position += diff.normalized() * (220.0 * dt);
+          }
+        }
+      }
+      for (final star in children.whereType<Star>()) {
+        final diff = rocketCenter - star.position;
+        if (diff.length < 240.0 && diff.length > 5.0) {
+          star.position += diff.normalized() * (180.0 * dt);
+        }
+      }
+    }
+
+    if (slowMoTimer > 0) {
+      slowMoTimer -= dt;
+    }
 
     // Difficulty scaling: speed increases gradually every 20 seconds
     _difficultyTimer += dt;

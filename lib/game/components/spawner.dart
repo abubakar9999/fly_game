@@ -1,15 +1,16 @@
 import 'dart:math' as math;
-
 import 'package:flame/components.dart';
 
 import '../config.dart';
+import '../models/power_up_type.dart';
 import '../space_game.dart';
 import 'letter_bubble.dart';
 import 'meteor.dart';
 import 'planet.dart';
+import 'power_up_item.dart';
 import 'star.dart';
 
-/// Manages timed spawning of stars, planets, meteors, and educational letter bubbles.
+/// Manages timed spawning of stars, planets, meteors, educational letter bubbles, and cosmic power-ups.
 class Spawner extends Component with HasGameReference<SpaceGame> {
   final math.Random _random = math.Random();
 
@@ -17,6 +18,7 @@ class Spawner extends Component with HasGameReference<SpaceGame> {
   Timer? _planetTimer;
   Timer? _meteorTimer;
   Timer? _letterTimer;
+  Timer? _powerUpTimer;
 
   int _letterSpawnCounter = 0;
   bool _isSpawning = true;
@@ -30,15 +32,15 @@ class Spawner extends Component with HasGameReference<SpaceGame> {
   void _configureTimers() {
     final config = game.difficultyConfig;
 
+    _powerUpTimer = Timer(14.0, repeat: true, onTick: _spawnPowerUp);
+
     if (game.isLearningMode) {
       // In Learning Mode: spawn letter bubbles and friendly stars (no punishing meteors)
       _letterTimer = Timer(1.8, repeat: true, onTick: _spawnLetterBubble);
       _starTimer = Timer(2.5, repeat: true, onTick: _spawnStar);
     } else {
       _starTimer = Timer(config.starSpawnInterval, repeat: true, onTick: _spawnStar);
-
       _planetTimer = Timer(config.planetSpawnInterval, repeat: true, onTick: _spawnPlanet);
-
       _meteorTimer = Timer(config.meteorSpawnInterval, repeat: true, onTick: _spawnMeteor);
     }
   }
@@ -62,6 +64,7 @@ class Spawner extends Component with HasGameReference<SpaceGame> {
     _planetTimer?.start();
     _meteorTimer?.start();
     _letterTimer?.start();
+    _powerUpTimer?.start();
   }
 
   void stopSpawning() {
@@ -70,6 +73,7 @@ class Spawner extends Component with HasGameReference<SpaceGame> {
     _planetTimer?.stop();
     _meteorTimer?.stop();
     _letterTimer?.stop();
+    _powerUpTimer?.stop();
   }
 
   void reset() {
@@ -78,6 +82,7 @@ class Spawner extends Component with HasGameReference<SpaceGame> {
     _planetTimer?.reset();
     _meteorTimer?.reset();
     _letterTimer?.reset();
+    _powerUpTimer?.reset();
     startSpawning();
   }
 
@@ -117,13 +122,28 @@ class Spawner extends Component with HasGameReference<SpaceGame> {
 
     // Guaranteed current target letter every 2 ticks; alternate with distractor
     final bool spawnTarget = (_letterSpawnCounter % 2 != 0);
-    final String letter = spawnTarget ? game.alphabetManager.currentTarget : game.alphabetManager.getRandomDistractor();
+    final String letter = spawnTarget
+        ? game.alphabetManager.currentTarget
+        : game.alphabetManager.getRandomDistractor();
 
     if (letter.isEmpty) return;
 
     final x = _getRandomX(56.0);
     final y = -GameConfig.offScreenMargin / 2;
-    game.add(LetterBubble(letter: letter, isTarget: spawnTarget, position: Vector2(x, y)));
+    game.add(LetterBubble(
+      letter: letter,
+      isTarget: spawnTarget,
+      position: Vector2(x, y),
+    ));
+  }
+
+  void _spawnPowerUp() {
+    if (!_isSpawning || game.size.x <= 0) return;
+    final types = PowerUpType.values;
+    final type = types[_random.nextInt(types.length)];
+    final x = _getRandomX(48.0);
+    final y = -GameConfig.offScreenMargin / 2;
+    game.add(PowerUpItem(type: type, position: Vector2(x, y)));
   }
 
   @override
@@ -135,5 +155,6 @@ class Spawner extends Component with HasGameReference<SpaceGame> {
     _planetTimer?.update(dt);
     _meteorTimer?.update(dt);
     _letterTimer?.update(dt);
+    _powerUpTimer?.update(dt);
   }
 }

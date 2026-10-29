@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../game/models/alphabet_data.dart';
 import '../game/space_game.dart';
+import 'cosmo_mascot_widget.dart';
 
-/// HUD overlay tailored for Alphabet Learning mode with prominent target letter display.
+/// HUD overlay tailored for Alphabet Learning mode with prominent target letter display, mascot companion, and power-up meters.
 class AlphabetHudOverlay extends StatelessWidget {
   final SpaceGame game;
 
@@ -135,40 +136,53 @@ class AlphabetHudOverlay extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 8.0),
+            const SizedBox(height: 6.0),
 
-            // Progress bar
-            ValueListenableBuilder<double>(
-              valueListenable: game.alphabetManager.progressNotifier,
-              builder: (context, progress, _) {
-                final currentStep = game.alphabetManager.currentIndex;
-                final total = game.alphabetManager.totalLetters;
-                return Column(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: SizedBox(
-                        height: 8.0,
-                        width: 220.0,
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          backgroundColor: Colors.white.withValues(alpha: 0.15),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
+            // Middle Row: Cosmo Mascot & Progress Bar
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Cosmo Mascot Companion
+                CosmoMascotWidget(
+                  isStarPower: game.rocket.isStarPower,
+                  voiceService: game.voiceService,
+                ),
+
+                // Progress bar
+                ValueListenableBuilder<double>(
+                  valueListenable: game.alphabetManager.progressNotifier,
+                  builder: (context, progress, _) {
+                    final currentStep = game.alphabetManager.currentIndex;
+                    final total = game.alphabetManager.totalLetters;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: SizedBox(
+                            height: 7.0,
+                            width: 170.0,
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              backgroundColor: Colors.white.withValues(alpha: 0.15),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 4.0),
-                    Text(
-                      '$currentStep / $total',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                );
-              },
+                        const SizedBox(height: 3.0),
+                        Text(
+                          '$currentStep / $total',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
             ),
           ],
         ),

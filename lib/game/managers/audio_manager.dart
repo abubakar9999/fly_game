@@ -55,6 +55,16 @@ class AudioManager {
     }
   }
 
+  /// Plays power-up collection SFX.
+  Future<void> playPowerUp() async {
+    if (_isMuted) return;
+    try {
+      await FlameAudio.play('powerup.wav');
+    } catch (e) {
+      debugPrint('AudioManager: powerup sound skipped ($e)');
+    }
+  }
+
   /// Starts background music loop.
   Future<void> startBgm() async {
     if (_isMuted || _isMusicPlaying) return;

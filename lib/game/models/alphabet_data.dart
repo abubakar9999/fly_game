@@ -6,9 +6,25 @@ enum AlphabetType {
   numbersEnglish,
   numbersBangla,
   numbersArabic,
+  wordsEnglish,
+  wordsBangla,
+  wordsArabic,
 }
 
-/// Information, phonetic words, emojis, and letter/number datasets for educational modules.
+/// A word-spelling challenge mission for kids.
+class WordMission {
+  final String word;
+  final String emoji;
+  final List<String> letters;
+
+  const WordMission({
+    required this.word,
+    required this.emoji,
+    required this.letters,
+  });
+}
+
+/// Information, phonetic words, emojis, word spelling missions, and datasets for educational modules.
 class AlphabetData {
   AlphabetData._();
 
@@ -31,6 +47,29 @@ class AlphabetData {
   static const List<String> arabicNumbers = [
     '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩', '١٠',
     '١١', '١٢', '١٣', '١٤', '١٥', '١٦', '١٧', '١٨', '١٩', '٢٠',
+  ];
+
+  static const List<WordMission> englishWordMissions = [
+    WordMission(word: 'CAT', emoji: '🐱', letters: ['C', 'A', 'T']),
+    WordMission(word: 'SUN', emoji: '☀️', letters: ['S', 'U', 'N']),
+    WordMission(word: 'DOG', emoji: '🐶', letters: ['D', 'O', 'G']),
+    WordMission(word: 'JET', emoji: '🚀', letters: ['J', 'E', 'T']),
+    WordMission(word: 'STAR', emoji: '⭐', letters: ['S', 'T', 'A', 'R']),
+  ];
+
+  static const List<WordMission> banglaWordMissions = [
+    WordMission(word: 'আম', emoji: '🥭', letters: ['আ', 'ম']),
+    WordMission(word: 'বই', emoji: '📖', letters: ['ব', 'ই']),
+    WordMission(word: 'মাছ', emoji: '🐟', letters: ['ম', 'া', 'ছ']),
+    WordMission(word: 'ফুল', emoji: '🌸', letters: ['ফ', 'ু', 'ল']),
+    WordMission(word: 'চাঁদ', emoji: '🌙', letters: ['চ', 'া', 'ঁ', 'দ']),
+  ];
+
+  static const List<WordMission> arabicWordMissions = [
+    WordMission(word: 'قمر', emoji: '🌙', letters: ['ق', 'م', 'ر']),
+    WordMission(word: 'أسد', emoji: '🦁', letters: ['أ', 'س', 'د']),
+    WordMission(word: 'شمس', emoji: '☀️', letters: ['ش', 'م', 'س']),
+    WordMission(word: 'كرة', emoji: '⚽', letters: ['ك', 'ر', 'ة']),
   ];
 
   static const Map<String, String> phonicsWords = {
@@ -270,6 +309,25 @@ class AlphabetData {
         return banglaNumbers;
       case AlphabetType.numbersArabic:
         return arabicNumbers;
+      case AlphabetType.wordsEnglish:
+        return englishWordMissions.expand((m) => m.letters).toList();
+      case AlphabetType.wordsBangla:
+        return banglaWordMissions.expand((m) => m.letters).toList();
+      case AlphabetType.wordsArabic:
+        return arabicWordMissions.expand((m) => m.letters).toList();
+    }
+  }
+
+  static List<WordMission> getWordMissions(AlphabetType type) {
+    switch (type) {
+      case AlphabetType.wordsEnglish:
+        return englishWordMissions;
+      case AlphabetType.wordsBangla:
+        return banglaWordMissions;
+      case AlphabetType.wordsArabic:
+        return arabicWordMissions;
+      default:
+        return const [];
     }
   }
 
@@ -289,6 +347,12 @@ class AlphabetData {
         return 'বাংলা সংখ্যা (১ - ২০)';
       case AlphabetType.numbersArabic:
         return 'الأرقام العربية (١ - ٢٠)';
+      case AlphabetType.wordsEnglish:
+        return 'Word Builder (English)';
+      case AlphabetType.wordsBangla:
+        return 'শব্দ গঠন (বাংলা)';
+      case AlphabetType.wordsArabic:
+        return 'بناء الكلمات (العربية)';
     }
   }
 
@@ -296,13 +360,16 @@ class AlphabetData {
     switch (type) {
       case AlphabetType.english:
       case AlphabetType.numbersEnglish:
+      case AlphabetType.wordsEnglish:
         return 'en-US';
       case AlphabetType.banglaSwaraborno:
       case AlphabetType.banglaByanjanborno:
       case AlphabetType.numbersBangla:
+      case AlphabetType.wordsBangla:
         return 'bn-BD';
       case AlphabetType.arabic:
       case AlphabetType.numbersArabic:
+      case AlphabetType.wordsArabic:
         return 'ar';
     }
   }

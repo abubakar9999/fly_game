@@ -6,11 +6,12 @@ import 'package:flutter/material.dart';
 
 import '../config.dart';
 import '../space_game.dart';
+import 'collect_effect.dart';
 import 'meteor.dart';
 import 'planet.dart';
 import 'star.dart';
 
-/// Player controlled rocket component with customizable skins and Star-Power combo thrusters.
+/// Player controlled rocket component with customizable skins, Star-Power combo thrusters, and power-up shields.
 class Rocket extends PositionComponent
     with HasGameReference<SpaceGame>, CollisionCallbacks, DragCallbacks {
   RocketSkin skin = RocketSkin.classic;
@@ -29,6 +30,9 @@ class Rocket extends PositionComponent
   double _blinkTimer = 0.0;
   bool _isVisible = true;
 
+  // Power-up shield state
+  bool hasShield = false;
+
   // Flame animation timer & combo streak
   double _flameTime = 0.0;
   int comboStreak = 0;
@@ -43,6 +47,14 @@ class Rocket extends PositionComponent
   final Paint _starPowerGlow = Paint()
     ..color = const Color(0xFFFFD700).withValues(alpha: 0.4)
     ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10.0);
+
+  final Paint _shieldPaint = Paint()
+    ..color = const Color(0xFF00E5FF).withValues(alpha: 0.28)
+    ..style = PaintingStyle.fill;
+  final Paint _shieldBorder = Paint()
+    ..color = const Color(0xFF00E5FF).withValues(alpha: 0.85)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2.5;
 
   bool get isInvincible => _isInvincible;
 
@@ -169,7 +181,19 @@ class Rocket extends PositionComponent
       other.removeFromParent();
       game.onPlanetCollected(other);
     } else if (other is Meteor) {
-      if (!_isInvincible) {
+      if (hasShield) {
+        // Shield absorbs the hazard completely
+        other.removeFromParent();
+        hasShield = false;
+        game.audioManager.playHit();
+        game.add(
+          CollectEffect(
+            position: position.clone(),
+            particleColor: const Color(0xFF00E5FF),
+            particleCount: 16,
+          ),
+        );
+      } else if (!_isInvincible) {
         other.removeFromParent();
         triggerHit();
         game.onMeteorHit(other);
@@ -183,6 +207,13 @@ class Rocket extends PositionComponent
 
     final w = size.x;
     final h = size.y;
+
+    // Draw active shield forcefield
+    if (hasShield) {
+      final shieldPulse = math.sin(_flameTime * 0.5) * 3.0;
+      canvas.drawCircle(Offset(w * 0.5, h * 0.5), (w * 0.72) + shieldPulse, _shieldPaint);
+      canvas.drawCircle(Offset(w * 0.5, h * 0.5), (w * 0.72) + shieldPulse, _shieldBorder);
+    }
 
     // Draw Star-Power cosmic aura when combo >= 3
     if (isStarPower) {

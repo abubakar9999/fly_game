@@ -5,6 +5,7 @@ import '../game/config.dart';
 import '../services/storage_service.dart';
 import 'game_play_screen.dart';
 import 'learning_world_dialog.dart';
+import 'parent_dashboard_dialog.dart';
 import 'rocket_hangar_dialog.dart';
 import 'sticker_album_dialog.dart';
 
@@ -129,6 +130,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openParentDashboard() {
+    showDialog(
+      context: context,
+      builder: (_) => ParentDashboardDialog(
+        storageService: widget.storageService,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<AppLanguage>(
@@ -156,10 +166,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Header & Title
                   Column(
                     children: [
-                      const SizedBox(height: 12.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            iconSize: 26.0,
+                            icon: const Icon(Icons.family_restroom_rounded, color: Color(0xFF90CAF9)),
+                            tooltip: 'Parent Dashboard',
+                            onPressed: _openParentDashboard,
+                          ),
+                        ],
+                      ),
                       const Icon(
                         Icons.rocket_launch_rounded,
-                        size: 72.0,
+                        size: 68.0,
                         color: Color(0xFFFF5252),
                       ),
                       const SizedBox(height: 12.0),

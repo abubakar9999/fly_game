@@ -183,6 +183,52 @@ class LearningWorldDialog extends StatelessWidget {
                       gradientColors: [const Color(0xFFE91E63), const Color(0xFFFF4081)],
                       onTap: () => _launchLearningMode(context, AlphabetType.numbersArabic),
                     ),
+                    const SizedBox(height: 18.0),
+
+                    // Section 3: Word Builder Missions
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+                      child: Text(
+                        isBn ? '🐱 শব্দ গঠন মিশন (Word Builder)' : '🐱 Word Builder Missions',
+                        style: const TextStyle(
+                          color: Color(0xFFFFD54F),
+                          fontSize: 15.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    // English Word Builder
+                    _buildWorldCard(
+                      context: context,
+                      title: 'Word Builder (English)',
+                      subtitle: '🐱 CAT, ☀️ SUN, 🐶 DOG, 🚀 JET',
+                      badge: 'Words',
+                      gradientColors: [const Color(0xFF7C4DFF), const Color(0xFFB388FF)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.wordsEnglish),
+                    ),
+                    const SizedBox(height: 10.0),
+
+                    // Bangla Word Builder
+                    _buildWorldCard(
+                      context: context,
+                      title: 'শব্দ গঠন (বাংলা)',
+                      subtitle: '🥭 আম, 📖 বই, 🐟 মাছ, 🌸 ফুল',
+                      badge: 'শব্দ',
+                      gradientColors: [const Color(0xFF00C853), const Color(0xFFB9F6CA)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.wordsBangla),
+                    ),
+                    const SizedBox(height: 10.0),
+
+                    // Arabic Word Builder
+                    _buildWorldCard(
+                      context: context,
+                      title: 'بناء الكلمات (العربية)',
+                      subtitle: '🌙 قمر, 🦁 أسد, ☀️ شمس',
+                      badge: 'كلمات',
+                      gradientColors: [const Color(0xFFD500F9), const Color(0xFFEA80FC)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.wordsArabic),
+                    ),
                   ],
                 ),
               ),
