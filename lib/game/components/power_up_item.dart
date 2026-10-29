@@ -104,3 +104,4 @@ class PowerUpItem extends PositionComponent
     }
   }
 }
+
