@@ -57,53 +57,55 @@ class _CosmoMascotWidgetState extends State<CosmoMascotWidget>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final bob = math.sin(_controller.value * math.pi) * 4.0;
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final bob = math.sin(_controller.value * math.pi) * 4.0;
 
-        return GestureDetector(
-          onTap: _onCosmoTapped,
-          child: Transform.translate(
-            offset: Offset(0, -bob),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-              decoration: BoxDecoration(
-                color: widget.isStarPower
-                    ? const Color(0xFFFFD700).withValues(alpha: 0.25)
-                    : const Color(0xFF1E2638).withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(16.0),
-                border: Border.all(
+          return GestureDetector(
+            onTap: _onCosmoTapped,
+            child: Transform.translate(
+              offset: Offset(0, -bob),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                decoration: BoxDecoration(
                   color: widget.isStarPower
-                      ? const Color(0xFFFFD700)
-                      : const Color(0xFF64B5F6).withValues(alpha: 0.6),
-                  width: widget.isStarPower ? 2.0 : 1.5,
+                      ? const Color(0xFFFFD700).withValues(alpha: 0.25)
+                      : const Color(0xFF1E2638).withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(16.0),
+                  border: Border.all(
+                    color: widget.isStarPower
+                        ? const Color(0xFFFFD700)
+                        : const Color(0xFF64B5F6).withValues(alpha: 0.6),
+                    width: widget.isStarPower ? 2.0 : 1.5,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.isStarPower ? '🤩' : '🐰',
+                      style: const TextStyle(fontSize: 22.0),
+                    ),
+                    const SizedBox(width: 4.0),
+                    Text(
+                      widget.isStarPower ? 'Cosmo: WOW!' : 'Cosmo',
+                      style: TextStyle(
+                        color: widget.isStarPower
+                            ? const Color(0xFFFFD700)
+                            : Colors.white70,
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.isStarPower ? '🤩' : '🐰',
-                    style: const TextStyle(fontSize: 22.0),
-                  ),
-                  const SizedBox(width: 4.0),
-                  Text(
-                    widget.isStarPower ? 'Cosmo: WOW!' : 'Cosmo',
-                    style: TextStyle(
-                      color: widget.isStarPower
-                          ? const Color(0xFFFFD700)
-                          : Colors.white70,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

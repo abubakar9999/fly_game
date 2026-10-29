@@ -8,6 +8,7 @@ class _Particle {
   final double vx;
   final double vy;
   final double size;
+  Offset offset = Offset.zero;
 
   _Particle({
     required this.x,
@@ -60,6 +61,7 @@ class CollectEffect extends PositionComponent {
     for (final p in _particles) {
       p.x += p.vx * dt;
       p.y += p.vy * dt;
+      p.offset = Offset(p.x, p.y);
     }
   }
 
@@ -70,7 +72,7 @@ class CollectEffect extends PositionComponent {
     _paint.color = particleColor.withValues(alpha: alpha);
 
     for (final p in _particles) {
-      canvas.drawCircle(Offset(p.x, p.y), p.size * (1.0 - progress * 0.4), _paint);
+      canvas.drawCircle(p.offset, p.size * (1.0 - progress * 0.4), _paint);
     }
   }
 }

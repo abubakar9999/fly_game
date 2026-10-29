@@ -16,8 +16,13 @@ class LetterBubble extends PositionComponent with CollisionCallbacks, HasGameRef
   bool _isCollected = false;
   late final Paint _bubblePaint;
   late final Paint _borderPaint;
-  late final Paint _glowPaint;
+  late final Paint _haloPaint;
+  late final Paint _highlightPaint;
+  late final Rect _highlightRect;
   late final TextPainter _textPainter;
+  late final Offset _center;
+  late final double _radius;
+  late final Offset _textOffset;
 
   // Curated vibrant kid-friendly bubble colors
   static const List<Color> _palette = [
@@ -33,6 +38,9 @@ class LetterBubble extends PositionComponent with CollisionCallbacks, HasGameRef
     // Choose bubble tint based on letter
     final color = _palette[letter.codeUnitAt(0) % _palette.length];
 
+    _center = Offset(size.x / 2, size.y / 2);
+    _radius = size.x / 2;
+
     _bubblePaint = Paint()
       ..color = color.withValues(alpha: 0.35)
       ..style = PaintingStyle.fill;
@@ -42,22 +50,32 @@ class LetterBubble extends PositionComponent with CollisionCallbacks, HasGameRef
       ..style = PaintingStyle.stroke
       ..strokeWidth = isTarget ? 3.5 : 2.5;
 
-    _glowPaint = Paint()
-      ..color = color.withValues(alpha: isTarget ? 0.4 : 0.2)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0);
+    // Hardware-accelerated smooth outer glow without GPU/CPU blur filter overhead
+    _haloPaint = Paint()
+      ..color = color.withValues(alpha: isTarget ? 0.22 : 0.12)
+      ..style = PaintingStyle.fill;
+
+    _highlightPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    _highlightRect = Rect.fromCircle(center: _center, radius: _radius - 6);
 
     _textPainter = TextPainter(
       text: TextSpan(
         text: letter,
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 28.0,
           fontWeight: FontWeight.bold,
-          shadows: [Shadow(color: Colors.black.withValues(alpha: 0.8), offset: const Offset(1, 2), blurRadius: 4.0)],
+          shadows: [Shadow(color: Colors.black87, offset: Offset(1.5, 1.5))],
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
+
+    _textOffset = Offset(_center.dx - _textPainter.width / 2, _center.dy - _textPainter.height / 2);
   }
 
   @override
@@ -86,29 +104,20 @@ class LetterBubble extends PositionComponent with CollisionCallbacks, HasGameRef
   void render(Canvas canvas) {
     super.render(canvas);
 
-    final center = Offset(size.x / 2, size.y / 2);
-    final radius = size.x / 2;
-
-    // 1. Outer Glow
-    canvas.drawCircle(center, radius, _glowPaint);
+    // 1. Hardware accelerated outer glow halo
+    canvas.drawCircle(_center, _radius + (isTarget ? 6.0 : 3.0), _haloPaint);
 
     // 2. Translucent Bubble Body
-    canvas.drawCircle(center, radius - 2, _bubblePaint);
+    canvas.drawCircle(_center, _radius - 2, _bubblePaint);
 
     // 3. Crisp Neon Border
-    canvas.drawCircle(center, radius - 2, _borderPaint);
+    canvas.drawCircle(_center, _radius - 2, _borderPaint);
 
-    // 4. Glass highlight shimmer arc
-    final highlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-    final highlightRect = Rect.fromCircle(center: center, radius: radius - 6);
-    canvas.drawArc(highlightRect, -math.pi * 0.75, math.pi * 0.45, false, highlightPaint);
+    // 4. Glass highlight shimmer arc (zero allocations)
+    canvas.drawArc(_highlightRect, -math.pi * 0.75, math.pi * 0.45, false, _highlightPaint);
 
     // 5. Letter glyph in center
-    final textOffset = Offset(center.dx - _textPainter.width / 2, center.dy - _textPainter.height / 2);
-    _textPainter.paint(canvas, textOffset);
+    _textPainter.paint(canvas, _textOffset);
   }
 
   @override

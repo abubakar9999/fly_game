@@ -44,9 +44,12 @@ class Rocket extends PositionComponent
   late Paint _finPaint;
   late Paint _flamePaint;
   final Paint _flameInnerPaint = Paint()..color = Colors.yellowAccent;
-  final Paint _starPowerGlow = Paint()
-    ..color = const Color(0xFFFFD700).withValues(alpha: 0.4)
-    ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10.0);
+  final Paint _starPowerOuterGlow = Paint()
+    ..color = const Color(0xFFFFD700).withValues(alpha: 0.15)
+    ..style = PaintingStyle.fill;
+  final Paint _starPowerInnerGlow = Paint()
+    ..color = const Color(0xFFFFD700).withValues(alpha: 0.28)
+    ..style = PaintingStyle.fill;
 
   final Paint _shieldPaint = Paint()
     ..color = const Color(0xFF00E5FF).withValues(alpha: 0.28)
@@ -55,6 +58,19 @@ class Rocket extends PositionComponent
     ..color = const Color(0xFF00E5FF).withValues(alpha: 0.85)
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2.5;
+
+  final Paint _shinePaint = Paint()
+    ..color = Colors.white.withValues(alpha: 0.6)
+    ..style = PaintingStyle.fill;
+  late Paint _rainbowFlamePaint;
+
+  // Pre-cached vector paths for zero GC allocations per frame
+  final Path _bodyPath = Path();
+  final Path _leftFin = Path();
+  final Path _rightFin = Path();
+  final Path _flamePath = Path();
+  final Path _innerFlamePath = Path();
+  bool _pathsBuilt = false;
 
   bool get isInvincible => _isInvincible;
 
@@ -83,6 +99,8 @@ class Rocket extends PositionComponent
   Future<void> onLoad() async {
     await super.onLoad();
 
+    _buildStaticPaths();
+
     // Hitbox slightly smaller than the rocket body to feel fair and kid-friendly
     add(
       RectangleHitbox(
@@ -93,6 +111,41 @@ class Rocket extends PositionComponent
 
     // Initial position at bottom center
     resetPosition();
+  }
+
+  void _buildStaticPaths() {
+    final w = size.x;
+    final h = size.y;
+
+    // Build rocket body path
+    _bodyPath.reset();
+    _bodyPath.moveTo(w * 0.5, 0);
+    _bodyPath.quadraticBezierTo(w * 0.85, h * 0.35, w * 0.75, h * 0.88);
+    _bodyPath.lineTo(w * 0.25, h * 0.88);
+    _bodyPath.quadraticBezierTo(w * 0.15, h * 0.35, w * 0.5, 0);
+    _bodyPath.close();
+
+    // Build left fin
+    _leftFin.reset();
+    _leftFin.moveTo(w * 0.25, h * 0.55);
+    _leftFin.lineTo(0, h * 0.85);
+    _leftFin.lineTo(w * 0.25, h * 0.82);
+    _leftFin.close();
+
+    // Build right fin
+    _rightFin.reset();
+    _rightFin.moveTo(w * 0.75, h * 0.55);
+    _rightFin.lineTo(w, h * 0.85);
+    _rightFin.lineTo(w * 0.75, h * 0.82);
+    _rightFin.close();
+
+    // Pre-create rainbow flame shader
+    _rainbowFlamePaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Colors.purpleAccent, Colors.cyanAccent, Colors.yellowAccent],
+      ).createShader(Rect.fromLTWH(0, h * 0.88, w, 24.0));
+
+    _pathsBuilt = true;
   }
 
   /// Positions the rocket at the bottom center of the game view.
@@ -108,6 +161,7 @@ class Rocket extends PositionComponent
     super.onGameResize(size);
     position.y = size.y - GameConfig.rocketBottomPadding;
     _clampPosition();
+    _buildStaticPaths();
   }
 
   /// Triggers temporary invincibility after taking damage.
@@ -205,6 +259,10 @@ class Rocket extends PositionComponent
   void render(Canvas canvas) {
     if (!_isVisible) return;
 
+    if (!_pathsBuilt) {
+      _buildStaticPaths();
+    }
+
     final w = size.x;
     final h = size.y;
 
@@ -215,59 +273,37 @@ class Rocket extends PositionComponent
       canvas.drawCircle(Offset(w * 0.5, h * 0.5), (w * 0.72) + shieldPulse, _shieldBorder);
     }
 
-    // Draw Star-Power cosmic aura when combo >= 3
+    // Draw Star-Power cosmic aura when combo >= 3 (hardware accelerated concentric halo)
     if (isStarPower) {
-      canvas.drawCircle(Offset(w * 0.5, h * 0.5), w * 0.65, _starPowerGlow);
+      canvas.drawCircle(Offset(w * 0.5, h * 0.5), w * 0.75, _starPowerOuterGlow);
+      canvas.drawCircle(Offset(w * 0.5, h * 0.5), w * 0.62, _starPowerInnerGlow);
     }
 
     // 1. Draw animated thruster flame (Rainbow boosted if in Star-Power!)
     final flameFlicker = math.sin(_flameTime).abs() * (isStarPower ? 12.0 : 6.0);
     final flameExtraLength = isStarPower ? 14.0 : 8.0;
+    final flamePaint = isStarPower ? _rainbowFlamePaint : _flamePaint;
 
-    final flamePaint = isStarPower
-        ? (Paint()
-          ..shader = const LinearGradient(
-            colors: [Colors.purpleAccent, Colors.cyanAccent, Colors.yellowAccent],
-          ).createShader(Rect.fromLTWH(0, h * 0.88, w, 24.0)))
-        : _flamePaint;
+    _flamePath.reset();
+    _flamePath.moveTo(w * 0.35, h * 0.88);
+    _flamePath.lineTo(w * 0.5, h + flameExtraLength + flameFlicker);
+    _flamePath.lineTo(w * 0.65, h * 0.88);
+    _flamePath.close();
+    canvas.drawPath(_flamePath, flamePaint);
 
-    final flamePath = Path()
-      ..moveTo(w * 0.35, h * 0.88)
-      ..lineTo(w * 0.5, h + flameExtraLength + flameFlicker)
-      ..lineTo(w * 0.65, h * 0.88)
-      ..close();
-    canvas.drawPath(flamePath, flamePaint);
+    _innerFlamePath.reset();
+    _innerFlamePath.moveTo(w * 0.42, h * 0.90);
+    _innerFlamePath.lineTo(w * 0.5, h + 3.0 + (flameFlicker * 0.6));
+    _innerFlamePath.lineTo(w * 0.58, h * 0.90);
+    _innerFlamePath.close();
+    canvas.drawPath(_innerFlamePath, _flameInnerPaint);
 
-    final innerFlamePath = Path()
-      ..moveTo(w * 0.42, h * 0.90)
-      ..lineTo(w * 0.5, h + 3.0 + (flameFlicker * 0.6))
-      ..lineTo(w * 0.58, h * 0.90)
-      ..close();
-    canvas.drawPath(innerFlamePath, _flameInnerPaint);
+    // 2. Draw pre-built side fins
+    canvas.drawPath(_leftFin, _finPaint);
+    canvas.drawPath(_rightFin, _finPaint);
 
-    // 2. Draw side fins
-    final leftFin = Path()
-      ..moveTo(w * 0.25, h * 0.55)
-      ..lineTo(0, h * 0.85)
-      ..lineTo(w * 0.25, h * 0.82)
-      ..close();
-    canvas.drawPath(leftFin, _finPaint);
-
-    final rightFin = Path()
-      ..moveTo(w * 0.75, h * 0.55)
-      ..lineTo(w, h * 0.85)
-      ..lineTo(w * 0.75, h * 0.82)
-      ..close();
-    canvas.drawPath(rightFin, _finPaint);
-
-    // 3. Draw streamlined rocket body
-    final bodyPath = Path()
-      ..moveTo(w * 0.5, 0)
-      ..quadraticBezierTo(w * 0.85, h * 0.35, w * 0.75, h * 0.88)
-      ..lineTo(w * 0.25, h * 0.88)
-      ..quadraticBezierTo(w * 0.15, h * 0.35, w * 0.5, 0)
-      ..close();
-    canvas.drawPath(bodyPath, _bodyPaint);
+    // 3. Draw pre-built streamlined rocket body
+    canvas.drawPath(_bodyPath, _bodyPaint);
 
     // 4. Draw cockpit window
     canvas.drawCircle(
@@ -276,14 +312,11 @@ class Rocket extends PositionComponent
       _windowPaint,
     );
 
-    // Cute reflection highlight inside cockpit
-    final shinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.6)
-      ..style = PaintingStyle.fill;
+    // Cute reflection highlight inside cockpit (reusing pre-cached _shinePaint)
     canvas.drawCircle(
       Offset(w * 0.46, h * 0.32),
       w * 0.05,
-      shinePaint,
+      _shinePaint,
     );
   }
 }

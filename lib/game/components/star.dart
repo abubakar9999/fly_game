@@ -21,15 +21,21 @@ class Star extends PositionComponent with HasGameReference<SpaceGame> {
   final Paint _starPaint = Paint()..color = GameConfig.starColor;
   final Paint _innerPaint = Paint()..color = Colors.white;
   final Path _starPath = Path();
-  bool _pathInitialized = false;
+  late final Offset _center;
+  late final double _innerRadius;
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Fair hitbox for kids
+    _center = Offset(size.x * 0.5, size.y * 0.5);
+    _innerRadius = size.x * 0.12;
+    _buildStarPath();
+
+    // Passive hitbox: only checks collisions against the active Rocket
     add(
       CircleHitbox(
+        collisionType: CollisionType.passive,
         radius: size.x * 0.38,
         position: Vector2(size.x * 0.12, size.y * 0.12),
       ),
@@ -64,7 +70,6 @@ class Star extends PositionComponent with HasGameReference<SpaceGame> {
       );
     }
     _starPath.close();
-    _pathInitialized = true;
   }
 
   @override
@@ -79,18 +84,11 @@ class Star extends PositionComponent with HasGameReference<SpaceGame> {
 
   @override
   void render(Canvas canvas) {
-    if (!_pathInitialized) {
-      _buildStarPath();
-    }
     // Main star body
     canvas.drawPath(_starPath, _starPaint);
 
     // Cute sparkle center
-    canvas.drawCircle(
-      Offset(size.x * 0.5, size.y * 0.5),
-      size.x * 0.12,
-      _innerPaint,
-    );
+    canvas.drawCircle(_center, _innerRadius, _innerPaint);
   }
 }
 

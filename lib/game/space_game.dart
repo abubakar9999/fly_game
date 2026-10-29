@@ -155,6 +155,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
       CollectEffect(
         position: star.position.clone(),
         particleColor: GameConfig.starColor,
+        particleCount: 6,
       ),
     );
   }
@@ -170,7 +171,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
       CollectEffect(
         position: planet.position.clone(),
         particleColor: const Color(0xFF4DD0E1),
-        particleCount: 14,
+        particleCount: 8,
       ),
     );
   }
@@ -210,7 +211,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
         CollectEffect(
           position: bubble.position.clone(),
           particleColor: const Color(0xFFFFD700),
-          particleCount: 18,
+          particleCount: 10,
         ),
       );
 
@@ -341,22 +342,29 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
 
     if (!isPlaying) return;
 
-    // Power-up updates
+    // Power-up updates (optimized single-pass attraction with squared distance)
     if (magnetTimer > 0) {
       magnetTimer -= dt;
       final rocketCenter = rocket.position;
-      for (final letter in children.whereType<LetterBubble>()) {
-        if (letter.isTarget) {
-          final diff = rocketCenter - letter.position;
-          if (diff.length < 320.0 && diff.length > 5.0) {
-            letter.position += diff.normalized() * (220.0 * dt);
+      const letterRangeSq = 320.0 * 320.0;
+      const starRangeSq = 240.0 * 240.0;
+      const minRangeSq = 25.0; // 5.0 * 5.0
+
+      for (final child in children) {
+        if (child is LetterBubble && child.isTarget) {
+          final diff = rocketCenter - child.position;
+          final d2 = diff.length2;
+          if (d2 < letterRangeSq && d2 > minRangeSq) {
+            final invDist = 1.0 / math.sqrt(d2);
+            child.position += diff * (invDist * 220.0 * dt);
           }
-        }
-      }
-      for (final star in children.whereType<Star>()) {
-        final diff = rocketCenter - star.position;
-        if (diff.length < 240.0 && diff.length > 5.0) {
-          star.position += diff.normalized() * (180.0 * dt);
+        } else if (child is Star) {
+          final diff = rocketCenter - child.position;
+          final d2 = diff.length2;
+          if (d2 < starRangeSq && d2 > minRangeSq) {
+            final invDist = 1.0 / math.sqrt(d2);
+            child.position += diff * (invDist * 180.0 * dt);
+          }
         }
       }
     }

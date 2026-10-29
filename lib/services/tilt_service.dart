@@ -41,11 +41,13 @@ class TiltService {
   /// Stream of smoothed horizontal tilt values.
   Stream<double> get tiltStream => _tiltController.stream;
 
-  /// Starts listening to the device accelerometer.
+  /// Starts listening to the device accelerometer with gameInterval (50-60 Hz) to avoid platform channel flooding.
   void start() {
     _subscription?.cancel();
     try {
-      _subscription = accelerometerEventStream().listen(
+      _subscription = accelerometerEventStream(
+        samplingPeriod: SensorInterval.gameInterval,
+      ).listen(
         (AccelerometerEvent event) {
           // Negative X in portrait tilts to the right; invert so positive = right.
           final normalized = (-event.x / GameConfig.tiltMaxAngle)

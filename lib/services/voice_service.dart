@@ -8,6 +8,7 @@ class VoiceService {
   final FlutterTts _flutterTts = FlutterTts();
   bool _isInitialized = false;
   bool isMuted = false;
+  String? _currentLanguage;
 
   VoiceService({this.isMuted = false});
 
@@ -22,6 +23,13 @@ class VoiceService {
     }
   }
 
+  Future<void> _ensureLanguage(String langCode) async {
+    if (_currentLanguage != langCode) {
+      _currentLanguage = langCode;
+      await _flutterTts.setLanguage(langCode);
+    }
+  }
+
   /// Pronounces a single letter with the appropriate accent/locale.
   Future<void> speakLetter(String letter, {AlphabetType type = AlphabetType.english}) async {
     if (isMuted) return;
@@ -30,7 +38,7 @@ class VoiceService {
         await init();
       }
       final langCode = AlphabetData.getLanguageCode(type);
-      await _flutterTts.setLanguage(langCode);
+      await _ensureLanguage(langCode);
       await _flutterTts.speak(letter);
     } catch (e) {
       debugPrint('VoiceService: speakLetter skipped ($e)');
@@ -45,7 +53,7 @@ class VoiceService {
         await init();
       }
       final langCode = AlphabetData.getLanguageCode(type);
-      await _flutterTts.setLanguage(langCode);
+      await _ensureLanguage(langCode);
       final word = AlphabetData.getWord(letter);
       final spoken = word.isNotEmpty ? '$letter, $word' : letter;
       await _flutterTts.speak(spoken);
@@ -62,7 +70,7 @@ class VoiceService {
         await init();
       }
       final langCode = AlphabetData.getLanguageCode(type);
-      await _flutterTts.setLanguage(langCode);
+      await _ensureLanguage(langCode);
       await _flutterTts.speak(text);
     } catch (e) {
       debugPrint('VoiceService: speakText skipped ($e)');

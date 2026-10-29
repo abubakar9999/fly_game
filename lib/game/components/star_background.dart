@@ -27,7 +27,13 @@ class StarBackground extends Component with HasGameReference<SpaceGame> {
   double _slowOffset = 0.0;
   double _fastOffset = 0.0;
 
-  final Paint _starPaint = Paint()..color = Colors.white;
+  final Paint _slowPaint = Paint()
+    ..color = Colors.white.withValues(alpha: 0.5)
+    ..style = PaintingStyle.fill;
+
+  final Paint _fastPaint = Paint()
+    ..color = const Color(0xFFFFF9C4).withValues(alpha: 0.85)
+    ..style = PaintingStyle.fill;
 
   @override
   Future<void> onLoad() async {
@@ -44,8 +50,8 @@ class StarBackground extends Component with HasGameReference<SpaceGame> {
         _StarData(
           normX: random.nextDouble(),
           normY: random.nextDouble(),
-          radius: 1.0 + random.nextDouble() * 1.2,
-          alpha: 0.35 + random.nextDouble() * 0.35,
+          radius: 1.0 + random.nextDouble() * 1.0,
+          alpha: 0.5,
         ),
       );
     }
@@ -56,8 +62,8 @@ class StarBackground extends Component with HasGameReference<SpaceGame> {
         _StarData(
           normX: random.nextDouble(),
           normY: random.nextDouble(),
-          radius: 1.8 + random.nextDouble() * 1.8,
-          alpha: 0.7 + random.nextDouble() * 0.3,
+          radius: 1.8 + random.nextDouble() * 1.5,
+          alpha: 0.85,
         ),
       );
     }
@@ -77,21 +83,18 @@ class StarBackground extends Component with HasGameReference<SpaceGame> {
     final h = game.size.y;
     if (w <= 0 || h <= 0) return;
 
-    // Render distant stars
+    // Batched render of distant stars with single paint state
     for (final star in _slowStars) {
       final x = star.normX * w;
       final y = (star.normY * h + _slowOffset) % h;
-      _starPaint.color = Colors.white.withValues(alpha: star.alpha);
-      canvas.drawCircle(Offset(x, y), star.radius, _starPaint);
+      canvas.drawCircle(Offset(x, y), star.radius, _slowPaint);
     }
 
-    // Render foreground stars
+    // Batched render of foreground stars with single paint state
     for (final star in _fastStars) {
       final x = star.normX * w;
       final y = (star.normY * h + _fastOffset) % h;
-      _starPaint.color =
-          const Color(0xFFFFF9C4).withValues(alpha: star.alpha);
-      canvas.drawCircle(Offset(x, y), star.radius, _starPaint);
+      canvas.drawCircle(Offset(x, y), star.radius, _fastPaint);
     }
   }
 }

@@ -16,8 +16,11 @@ class PowerUpItem extends PositionComponent
 
   late final Paint _bgPaint;
   late final Paint _borderPaint;
-  late final Paint _glowPaint;
+  late final Paint _haloPaint;
   late final TextPainter _textPainter;
+  late final Offset _center;
+  late final double _radius;
+  late final Offset _textOffset;
 
   PowerUpItem({
     required this.type,
@@ -29,6 +32,9 @@ class PowerUpItem extends PositionComponent
         ) {
     final cfg = PowerUpConfig.of(type);
 
+    _center = Offset(size.x / 2, size.y / 2);
+    _radius = size.x / 2;
+
     _bgPaint = Paint()
       ..color = cfg.color.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
@@ -38,9 +44,10 @@ class PowerUpItem extends PositionComponent
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5;
 
-    _glowPaint = Paint()
-      ..color = cfg.color.withValues(alpha: 0.35)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0);
+    // Fast GPU halo
+    _haloPaint = Paint()
+      ..color = cfg.color.withValues(alpha: 0.22)
+      ..style = PaintingStyle.fill;
 
     _textPainter = TextPainter(
       text: TextSpan(
@@ -49,6 +56,11 @@ class PowerUpItem extends PositionComponent
       ),
       textDirection: TextDirection.ltr,
     )..layout();
+
+    _textOffset = Offset(
+      _center.dx - _textPainter.width / 2,
+      _center.dy - _textPainter.height / 2,
+    );
   }
 
   @override
@@ -75,20 +87,13 @@ class PowerUpItem extends PositionComponent
   void render(Canvas canvas) {
     super.render(canvas);
 
-    final center = Offset(size.x / 2, size.y / 2);
-    final radius = size.x / 2;
-
-    // Outer glow & orb
-    canvas.drawCircle(center, radius, _glowPaint);
-    canvas.drawCircle(center, radius - 2, _bgPaint);
-    canvas.drawCircle(center, radius - 2, _borderPaint);
+    // Outer glow halo & orb (zero allocations, 100% GPU)
+    canvas.drawCircle(_center, _radius + 4.0, _haloPaint);
+    canvas.drawCircle(_center, _radius - 2, _bgPaint);
+    canvas.drawCircle(_center, _radius - 2, _borderPaint);
 
     // Emoji icon
-    final textOffset = Offset(
-      center.dx - _textPainter.width / 2,
-      center.dy - _textPainter.height / 2,
-    );
-    _textPainter.paint(canvas, textOffset);
+    _textPainter.paint(canvas, _textOffset);
   }
 
   @override

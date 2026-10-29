@@ -24,13 +24,33 @@ class Planet extends PositionComponent with HasGameReference<SpaceGame> {
     ..strokeWidth = 4.0;
   final Paint _craterPaint = Paint()..color = const Color(0xFF26C6DA);
 
+  late final Offset _center;
+  late final double _radius;
+  late final Offset _spot1;
+  late final Offset _spot2;
+  late final Rect _ringRect;
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Hitbox for the planet body
+    final cx = size.x / 2;
+    final cy = size.y / 2;
+    _center = Offset(cx, cy);
+    _radius = size.x * 0.38;
+    _spot1 = Offset(cx - 7, cy - 6);
+    _spot2 = Offset(cx + 8, cy + 5);
+
+    _ringRect = Rect.fromCenter(
+      center: _center,
+      width: size.x * 0.95,
+      height: size.y * 0.35,
+    );
+
+    // Passive hitbox: only checks collisions against the active Rocket
     add(
       CircleHitbox(
+        collisionType: CollisionType.passive,
         radius: size.x * 0.38,
         position: Vector2(size.x * 0.12, size.y * 0.12),
       ),
@@ -49,24 +69,15 @@ class Planet extends PositionComponent with HasGameReference<SpaceGame> {
 
   @override
   void render(Canvas canvas) {
-    final cx = size.x / 2;
-    final cy = size.y / 2;
-    final radius = size.x * 0.38;
-
-    // Planet body
-    canvas.drawCircle(Offset(cx, cy), radius, _planetPaint);
+    // Planet body (zero allocations)
+    canvas.drawCircle(_center, _radius, _planetPaint);
 
     // Cute decorative spot / crater
-    canvas.drawCircle(Offset(cx - 7, cy - 6), 5.0, _craterPaint);
-    canvas.drawCircle(Offset(cx + 8, cy + 5), 3.5, _craterPaint);
+    canvas.drawCircle(_spot1, 5.0, _craterPaint);
+    canvas.drawCircle(_spot2, 3.5, _craterPaint);
 
     // Saturn-style planetary ring
-    final ringRect = Rect.fromCenter(
-      center: Offset(cx, cy),
-      width: size.x * 0.95,
-      height: size.y * 0.35,
-    );
-    canvas.drawOval(ringRect, _ringPaint);
+    canvas.drawOval(_ringRect, _ringPaint);
   }
 }
 
