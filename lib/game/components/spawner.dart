@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flame/components.dart';
 
 import '../config.dart';
@@ -31,34 +32,14 @@ class Spawner extends Component with HasGameReference<SpaceGame> {
 
     if (game.isLearningMode) {
       // In Learning Mode: spawn letter bubbles and friendly stars (no punishing meteors)
-      _letterTimer = Timer(
-        1.8,
-        repeat: true,
-        onTick: _spawnLetterBubble,
-      );
-      _starTimer = Timer(
-        2.5,
-        repeat: true,
-        onTick: _spawnStar,
-      );
+      _letterTimer = Timer(1.8, repeat: true, onTick: _spawnLetterBubble);
+      _starTimer = Timer(2.5, repeat: true, onTick: _spawnStar);
     } else {
-      _starTimer = Timer(
-        config.starSpawnInterval,
-        repeat: true,
-        onTick: _spawnStar,
-      );
+      _starTimer = Timer(config.starSpawnInterval, repeat: true, onTick: _spawnStar);
 
-      _planetTimer = Timer(
-        config.planetSpawnInterval,
-        repeat: true,
-        onTick: _spawnPlanet,
-      );
+      _planetTimer = Timer(config.planetSpawnInterval, repeat: true, onTick: _spawnPlanet);
 
-      _meteorTimer = Timer(
-        config.meteorSpawnInterval,
-        repeat: true,
-        onTick: _spawnMeteor,
-      );
+      _meteorTimer = Timer(config.meteorSpawnInterval, repeat: true, onTick: _spawnMeteor);
     }
   }
 
@@ -136,19 +117,13 @@ class Spawner extends Component with HasGameReference<SpaceGame> {
 
     // Guaranteed current target letter every 2 ticks; alternate with distractor
     final bool spawnTarget = (_letterSpawnCounter % 2 != 0);
-    final String letter = spawnTarget
-        ? game.alphabetManager.currentTarget
-        : game.alphabetManager.getRandomDistractor();
+    final String letter = spawnTarget ? game.alphabetManager.currentTarget : game.alphabetManager.getRandomDistractor();
 
     if (letter.isEmpty) return;
 
     final x = _getRandomX(56.0);
     final y = -GameConfig.offScreenMargin / 2;
-    game.add(LetterBubble(
-      letter: letter,
-      isTarget: spawnTarget,
-      position: Vector2(x, y),
-    ));
+    game.add(LetterBubble(letter: letter, isTarget: spawnTarget, position: Vector2(x, y)));
   }
 
   @override

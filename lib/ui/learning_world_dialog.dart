@@ -11,22 +11,13 @@ class LearningWorldDialog extends StatelessWidget {
   final StorageService storageService;
   final GameDifficulty difficulty;
 
-  const LearningWorldDialog({
-    super.key,
-    required this.storageService,
-    required this.difficulty,
-  });
+  const LearningWorldDialog({super.key, required this.storageService, required this.difficulty});
 
   void _launchLearningMode(BuildContext context, AlphabetType type) {
     Navigator.of(context).pop();
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => GamePlayScreen(
-          difficulty: difficulty,
-          storageService: storageService,
-          gameMode: GamePlayMode.alphabetQuest,
-          alphabetType: type,
-        ),
+        builder: (_) => GamePlayScreen(difficulty: difficulty, storageService: storageService, gameMode: GamePlayMode.alphabetQuest, alphabetType: type),
       ),
     );
   }
@@ -44,13 +35,7 @@ class LearningWorldDialog extends StatelessWidget {
           color: const Color(0xFF131926).withValues(alpha: 0.97),
           borderRadius: BorderRadius.circular(28.0),
           border: Border.all(color: const Color(0xFF00E5FF), width: 2.5),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
-              blurRadius: 20.0,
-              spreadRadius: 2.0,
-            ),
-          ],
+          boxShadow: [BoxShadow(color: const Color(0xFF00E5FF).withValues(alpha: 0.25), blurRadius: 20.0, spreadRadius: 2.0)],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -61,11 +46,7 @@ class LearningWorldDialog extends StatelessWidget {
                 const SizedBox(width: 32.0),
                 Text(
                   isBn ? '🚀 বর্ণমালা বেছে নিন' : '🚀 Choose Alphabet World',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded, color: Colors.white70),
@@ -109,28 +90,14 @@ class LearningWorldDialog extends StatelessWidget {
             const SizedBox(height: 12.0),
 
             // Arabic Huruf
-            _buildWorldCard(
-              context: context,
-              title: 'الحروف العربية',
-              subtitle: 'أ, ب, ت, ث ... ي',
-              badge: 'أ - ي',
-              gradientColors: [const Color(0xFF8E24AA), const Color(0xFFE040FB)],
-              onTap: () => _launchLearningMode(context, AlphabetType.arabic),
-            ),
+            _buildWorldCard(context: context, title: 'الحروف العربية', subtitle: 'أ, ب, ت, ث ... ي', badge: 'أ - ي', gradientColors: [const Color(0xFF8E24AA), const Color(0xFFE040FB)], onTap: () => _launchLearningMode(context, AlphabetType.arabic)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildWorldCard({
-    required BuildContext context,
-    required String title,
-    required String subtitle,
-    required String badge,
-    required List<Color> gradientColors,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildWorldCard({required BuildContext context, required String title, required String subtitle, required String badge, required List<Color> gradientColors, required VoidCallback onTap}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -139,12 +106,7 @@ class LearningWorldDialog extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                gradientColors[0].withValues(alpha: 0.3),
-                gradientColors[1].withValues(alpha: 0.15),
-              ],
-            ),
+            gradient: LinearGradient(colors: [gradientColors[0].withValues(alpha: 0.3), gradientColors[1].withValues(alpha: 0.15)]),
             borderRadius: BorderRadius.circular(18.0),
             border: Border.all(color: gradientColors[1].withValues(alpha: 0.6), width: 1.5),
           ),
@@ -156,21 +118,12 @@ class LearningWorldDialog extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: gradientColors),
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: gradientColors[1].withValues(alpha: 0.4),
-                      blurRadius: 8.0,
-                    ),
-                  ],
+                  boxShadow: [BoxShadow(color: gradientColors[1].withValues(alpha: 0.4), blurRadius: 8.0)],
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   badge,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.w900),
                 ),
               ),
               const SizedBox(width: 14.0),
@@ -180,20 +133,10 @@ class LearningWorldDialog extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 17.0,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 17.0, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 2.0),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.75),
-                        fontSize: 13.0,
-                      ),
-                    ),
+                    Text(subtitle, style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13.0)),
                   ],
                 ),
               ),

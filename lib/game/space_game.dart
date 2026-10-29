@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -48,12 +49,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
 
   double get currentFallSpeed => difficultyConfig.baseFallSpeed * speedMultiplier;
 
-  SpaceGame({
-    GameDifficulty? difficulty,
-    bool? isInitiallyMuted,
-    GamePlayMode? gameMode,
-    AlphabetType? alphabetType,
-  }) {
+  SpaceGame({GameDifficulty? difficulty, bool? isInitiallyMuted, GamePlayMode? gameMode, AlphabetType? alphabetType}) {
     if (difficulty != null) {
       this.difficulty = difficulty;
       difficultyConfig = DifficultyConfig.of(difficulty);
@@ -107,24 +103,13 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
   void onStarCollected(Star star) {
     scoreManager.addScore(GameConfig.starPoints);
     audioManager.playCollect();
-    add(
-      CollectEffect(
-        position: star.position.clone(),
-        particleColor: GameConfig.starColor,
-      ),
-    );
+    add(CollectEffect(position: star.position.clone(), particleColor: GameConfig.starColor));
   }
 
   void onPlanetCollected(Planet planet) {
     scoreManager.addScore(GameConfig.planetPoints);
     audioManager.playCollect();
-    add(
-      CollectEffect(
-        position: planet.position.clone(),
-        particleColor: const Color(0xFF4DD0E1),
-        particleCount: 14,
-      ),
-    );
+    add(CollectEffect(position: planet.position.clone(), particleColor: const Color(0xFF4DD0E1), particleCount: 14));
   }
 
   void onMeteorHit(Meteor meteor) {
@@ -148,13 +133,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
       audioManager.playCollect();
       voiceService.speakLetter(bubble.letter, type: alphabetManager.type);
 
-      add(
-        CollectEffect(
-          position: bubble.position.clone(),
-          particleColor: const Color(0xFFFFD700),
-          particleCount: 18,
-        ),
-      );
+      add(CollectEffect(position: bubble.position.clone(), particleColor: const Color(0xFFFFD700), particleCount: 18));
 
       bubble.removeFromParent();
 
@@ -265,10 +244,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
       if (_shakeTimer <= 0) {
         _shakeOffset.setZero();
       } else {
-        _shakeOffset.setValues(
-          (_random.nextDouble() * 2.0 - 1.0) * 8.0,
-          (_random.nextDouble() * 2.0 - 1.0) * 8.0,
-        );
+        _shakeOffset.setValues((_random.nextDouble() * 2.0 - 1.0) * 8.0, (_random.nextDouble() * 2.0 - 1.0) * 8.0);
       }
     }
 

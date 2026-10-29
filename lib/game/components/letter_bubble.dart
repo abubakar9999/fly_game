@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
@@ -28,15 +29,7 @@ class LetterBubble extends PositionComponent with CollisionCallbacks, HasGameRef
     Color(0xFFFF6E40), // Orange
   ];
 
-  LetterBubble({
-    required this.letter,
-    required this.isTarget,
-    required Vector2 position,
-  }) : super(
-          position: position,
-          size: Vector2.all(56.0),
-          anchor: Anchor.center,
-        ) {
+  LetterBubble({required this.letter, required this.isTarget, required Vector2 position}) : super(position: position, size: Vector2.all(56.0), anchor: Anchor.center) {
     // Choose bubble tint based on letter
     final color = _palette[letter.codeUnitAt(0) % _palette.length];
 
@@ -60,13 +53,7 @@ class LetterBubble extends PositionComponent with CollisionCallbacks, HasGameRef
           color: Colors.white,
           fontSize: 28.0,
           fontWeight: FontWeight.bold,
-          shadows: [
-            Shadow(
-              color: Colors.black.withValues(alpha: 0.8),
-              offset: const Offset(1, 2),
-              blurRadius: 4.0,
-            ),
-          ],
+          shadows: [Shadow(color: Colors.black.withValues(alpha: 0.8), offset: const Offset(1, 2), blurRadius: 4.0)],
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -120,10 +107,7 @@ class LetterBubble extends PositionComponent with CollisionCallbacks, HasGameRef
     canvas.drawArc(highlightRect, -math.pi * 0.75, math.pi * 0.45, false, highlightPaint);
 
     // 5. Letter glyph in center
-    final textOffset = Offset(
-      center.dx - _textPainter.width / 2,
-      center.dy - _textPainter.height / 2,
-    );
+    final textOffset = Offset(center.dx - _textPainter.width / 2, center.dy - _textPainter.height / 2);
     _textPainter.paint(canvas, textOffset);
   }
 
