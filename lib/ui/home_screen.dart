@@ -177,10 +177,26 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                      const Icon(
-                        Icons.rocket_launch_rounded,
-                        size: 68.0,
-                        color: Color(0xFFFF5252),
+                      Container(
+                        width: 96.0,
+                        height: 96.0,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFFFD54F), width: 3.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD54F).withValues(alpha: 0.35),
+                              blurRadius: 16.0,
+                              spreadRadius: 2.0,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/app_icon.png',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 12.0),
                       Text(
