@@ -175,3 +175,4 @@ class _StickerAlbumDialogState extends State<StickerAlbumDialog> {
     );
   }
 }
+
