@@ -24,12 +24,12 @@ void main() {
       expect(manager.isMuted, isFalse);
     });
 
-    test('setMuted updates mute state', () {
+    test('setMuted updates mute state', () async {
       final manager = AudioManager();
-      manager.setMuted(true);
+      await manager.setMuted(true);
       expect(manager.isMuted, isTrue);
 
-      manager.setMuted(false);
+      await manager.setMuted(false);
       expect(manager.isMuted, isFalse);
     });
 

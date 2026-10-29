@@ -7,14 +7,15 @@ class AudioManager {
   bool _isMusicPlaying = false;
 
   bool get isMuted => _isMuted;
+  bool get isMusicPlaying => _isMusicPlaying;
 
-  void setMuted(bool muted) {
+  Future<void> setMuted(bool muted) async {
     _isMuted = muted;
     try {
       if (_isMuted) {
-        stopBgm();
+        await stopBgm();
       } else {
-        resumeBgm();
+        await resumeBgm();
       }
     } catch (e) {
       debugPrint('AudioManager: setMuted failed ($e)');
@@ -63,38 +64,48 @@ class AudioManager {
       _isMusicPlaying = true;
     } catch (e) {
       debugPrint('AudioManager: background music skipped ($e)');
+      _isMusicPlaying = false;
     }
   }
 
   /// Pauses background music.
-  void pauseBgm() {
+  Future<void> pauseBgm() async {
+    if (!_isMusicPlaying) return;
     try {
-      if (_isMusicPlaying) {
-        FlameAudio.bgm.pause();
-      }
-    } catch (_) {}
+      await FlameAudio.bgm.pause();
+    } catch (e) {
+      debugPrint('AudioManager: pauseBgm skipped ($e)');
+    }
   }
 
   /// Resumes background music.
-  void resumeBgm() {
-    if (_isMuted) return;
+  Future<void> resumeBgm() async {
+    if (_isMuted || !_isMusicPlaying) return;
     try {
-      FlameAudio.bgm.resume();
-      _isMusicPlaying = true;
-    } catch (_) {}
+      await FlameAudio.bgm.resume();
+    } catch (e) {
+      debugPrint('AudioManager: resumeBgm skipped ($e)');
+    }
   }
 
   /// Stops background music completely.
-  void stopBgm() {
+  Future<void> stopBgm() async {
+    if (!_isMusicPlaying) return;
     try {
-      FlameAudio.bgm.stop();
+      await FlameAudio.bgm.stop();
+    } catch (e) {
+      debugPrint('AudioManager: stopBgm skipped ($e)');
+    } finally {
       _isMusicPlaying = false;
-    } catch (_) {}
+    }
   }
 
   void dispose() {
     try {
-      stopBgm();
+      if (_isMusicPlaying) {
+        FlameAudio.bgm.stop().catchError((_) {});
+        _isMusicPlaying = false;
+      }
       FlameAudio.bgm.dispose();
     } catch (_) {}
   }

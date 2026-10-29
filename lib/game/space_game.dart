@@ -21,15 +21,15 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
   final StarBackground starBackground = StarBackground();
   final Rocket rocket = Rocket();
   final AudioManager audioManager = AudioManager();
-  final ScoreManager scoreManager;
-  late final Spawner spawner;
+  final ScoreManager scoreManager = ScoreManager();
+  Spawner? spawner;
 
-  GameDifficulty difficulty;
-  DifficultyConfig difficultyConfig;
+  GameDifficulty difficulty = GameDifficulty.medium;
+  DifficultyConfig difficultyConfig = DifficultyConfig.medium;
   double speedMultiplier = 1.0;
   double _difficultyTimer = 0.0;
   bool isPlaying = false;
-  bool isInitiallyMuted;
+  bool isInitiallyMuted = false;
 
   // Screen shake state
   final math.Random _random = math.Random();
@@ -39,12 +39,18 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
   double get currentFallSpeed => difficultyConfig.baseFallSpeed * speedMultiplier;
 
   SpaceGame({
-    this.difficulty = GameDifficulty.medium,
-    this.isInitiallyMuted = false,
-  })  : difficultyConfig = DifficultyConfig.of(difficulty),
-        scoreManager = ScoreManager(
-          initialLives: DifficultyConfig.of(difficulty).initialLives,
-        );
+    GameDifficulty? difficulty,
+    bool? isInitiallyMuted,
+  }) {
+    if (difficulty != null) {
+      this.difficulty = difficulty;
+      difficultyConfig = DifficultyConfig.of(difficulty);
+      scoreManager.reset(initialLives: difficultyConfig.initialLives);
+    }
+    if (isInitiallyMuted != null) {
+      this.isInitiallyMuted = isInitiallyMuted;
+    }
+  }
 
   @override
   Color backgroundColor() => const Color(0xFF0B0E14);
@@ -69,8 +75,10 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     }
 
     // 3. Spawner
-    spawner = Spawner();
-    await add(spawner);
+    spawner ??= Spawner();
+    if (!spawner!.isMounted) {
+      await add(spawner!);
+    }
 
     isPlaying = true;
   }
@@ -116,7 +124,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
   /// Ends the current run and displays the friendly "Try again!" overlay.
   void endRun() {
     isPlaying = false;
-    spawner.stopSpawning();
+    spawner?.stopSpawning();
     audioManager.pauseBgm();
     overlays.remove('hud');
     overlays.add('result');
@@ -158,7 +166,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     scoreManager.reset(initialLives: difficultyConfig.initialLives);
 
     // Reset spawner
-    spawner.reset();
+    spawner?.reset();
     isPlaying = true;
 
     // Reset overlays
@@ -194,7 +202,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     if (_difficultyTimer >= 20.0) {
       _difficultyTimer = 0.0;
       speedMultiplier = (speedMultiplier * 1.05).clamp(1.0, 2.5);
-      spawner.updateIntervals(speedMultiplier);
+      spawner?.updateIntervals(speedMultiplier);
     }
   }
 
