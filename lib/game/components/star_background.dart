@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
@@ -11,12 +12,7 @@ class _StarData {
   final double radius;
   final double alpha;
 
-  const _StarData({
-    required this.normX,
-    required this.normY,
-    required this.radius,
-    required this.alpha,
-  });
+  const _StarData({required this.normX, required this.normY, required this.radius, required this.alpha});
 }
 
 /// Parallax scrolling stars background with 2 layers.
@@ -46,26 +42,10 @@ class StarBackground extends Component with HasGameReference<SpaceGame> {
 
     // Layer 1: Distant small stars
     for (int i = 0; i < 35; i++) {
-      _slowStars.add(
-        _StarData(
-          normX: random.nextDouble(),
-          normY: random.nextDouble(),
-          radius: 1.0 + random.nextDouble() * 1.0,
-          alpha: 0.5,
-        ),
-      );
     }
 
     // Layer 2: Closer, brighter, faster stars
     for (int i = 0; i < 20; i++) {
-      _fastStars.add(
-        _StarData(
-          normX: random.nextDouble(),
-          normY: random.nextDouble(),
-          radius: 1.8 + random.nextDouble() * 1.5,
-          alpha: 0.85,
-        ),
-      );
     }
   }
 
@@ -98,4 +78,3 @@ class StarBackground extends Component with HasGameReference<SpaceGame> {
     }
   }
 }
-

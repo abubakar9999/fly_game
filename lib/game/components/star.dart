@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
@@ -10,13 +11,7 @@ import '../space_game.dart';
 class Star extends PositionComponent with HasGameReference<SpaceGame> {
   final double speed;
 
-  Star({
-    required this.speed,
-    super.position,
-  }) : super(
-          size: Vector2.all(GameConfig.starSize),
-          anchor: Anchor.center,
-        );
+  Star({required this.speed, super.position}) : super(size: Vector2.all(GameConfig.starSize), anchor: Anchor.center);
 
   final Paint _starPaint = Paint()..color = GameConfig.starColor;
   final Paint _innerPaint = Paint()..color = Colors.white;
@@ -33,13 +28,7 @@ class Star extends PositionComponent with HasGameReference<SpaceGame> {
     _buildStarPath();
 
     // Passive hitbox: only checks collisions against the active Rocket
-    add(
-      CircleHitbox(
-        collisionType: CollisionType.passive,
-        radius: size.x * 0.38,
-        position: Vector2(size.x * 0.12, size.y * 0.12),
-      ),
-    );
+    add(CircleHitbox(collisionType: CollisionType.passive, radius: size.x * 0.38, position: Vector2(size.x * 0.12, size.y * 0.12)));
   }
 
   void _buildStarPath() {
@@ -52,22 +41,13 @@ class Star extends PositionComponent with HasGameReference<SpaceGame> {
     const step = math.pi / points;
     double angle = -math.pi / 2;
 
-    _starPath.moveTo(
-      cx + outerR * math.cos(angle),
-      cy + outerR * math.sin(angle),
-    );
+    _starPath.moveTo(cx + outerR * math.cos(angle), cy + outerR * math.sin(angle));
 
     for (int i = 0; i < points; i++) {
       angle += step;
-      _starPath.lineTo(
-        cx + innerR * math.cos(angle),
-        cy + innerR * math.sin(angle),
-      );
+      _starPath.lineTo(cx + innerR * math.cos(angle), cy + innerR * math.sin(angle));
       angle += step;
-      _starPath.lineTo(
-        cx + outerR * math.cos(angle),
-        cy + outerR * math.sin(angle),
-      );
+      _starPath.lineTo(cx + outerR * math.cos(angle), cy + outerR * math.sin(angle));
     }
     _starPath.close();
   }
@@ -91,4 +71,3 @@ class Star extends PositionComponent with HasGameReference<SpaceGame> {
     canvas.drawCircle(_center, _innerRadius, _innerPaint);
   }
 }
-

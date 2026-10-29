@@ -10,14 +10,7 @@ class Meteor extends PositionComponent with HasGameReference<SpaceGame> {
   final double speed;
   final double rotationSpeed;
 
-  Meteor({
-    required this.speed,
-    this.rotationSpeed = 1.2,
-    super.position,
-  }) : super(
-          size: Vector2.all(GameConfig.meteorSize),
-          anchor: Anchor.center,
-        );
+  Meteor({required this.speed, this.rotationSpeed = 1.2, super.position}) : super(size: Vector2.all(GameConfig.meteorSize), anchor: Anchor.center);
 
   final Paint _meteorPaint = Paint()..color = GameConfig.meteorColor;
   final Paint _craterPaint = Paint()..color = const Color(0xFF6D4C41);
@@ -45,13 +38,7 @@ class Meteor extends PositionComponent with HasGameReference<SpaceGame> {
     _c3 = Offset(cx - 4, cy + 8);
 
     // Passive hitbox: only checks collisions against the active Rocket
-    add(
-      CircleHitbox(
-        collisionType: CollisionType.passive,
-        radius: size.x * 0.36,
-        position: Vector2(size.x * 0.14, size.y * 0.14),
-      ),
-    );
+    add(CircleHitbox(collisionType: CollisionType.passive, radius: size.x * 0.36, position: Vector2(size.x * 0.14, size.y * 0.14)));
   }
 
   @override
@@ -77,4 +64,3 @@ class Meteor extends PositionComponent with HasGameReference<SpaceGame> {
     canvas.drawCircle(_c3, 3.0, _craterPaint);
   }
 }
-

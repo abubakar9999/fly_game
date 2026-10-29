@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +9,7 @@ import '../space_game.dart';
 import 'rocket.dart';
 
 /// Floating cosmic power-up capsule (Magnet 🧲, Shield 🛡️, Slow-Mo ⏱️).
-class PowerUpItem extends PositionComponent
-    with CollisionCallbacks, HasGameReference<SpaceGame> {
+class PowerUpItem extends PositionComponent with CollisionCallbacks, HasGameReference<SpaceGame> {
   final PowerUpType type;
   double _age = 0.0;
   bool _isCollected = false;
@@ -22,14 +22,7 @@ class PowerUpItem extends PositionComponent
   late final double _radius;
   late final Offset _textOffset;
 
-  PowerUpItem({
-    required this.type,
-    required Vector2 position,
-  }) : super(
-          position: position,
-          size: Vector2.all(48.0),
-          anchor: Anchor.center,
-        ) {
+  PowerUpItem({required this.type, required Vector2 position}) : super(position: position, size: Vector2.all(48.0), anchor: Anchor.center) {
     final cfg = PowerUpConfig.of(type);
 
     _center = Offset(size.x / 2, size.y / 2);
@@ -50,17 +43,11 @@ class PowerUpItem extends PositionComponent
       ..style = PaintingStyle.fill;
 
     _textPainter = TextPainter(
-      text: TextSpan(
-        text: cfg.emoji,
-        style: const TextStyle(fontSize: 24.0),
-      ),
+      text: TextSpan(text: cfg.emoji, style: const TextStyle(fontSize: 24.0)),
       textDirection: TextDirection.ltr,
     )..layout();
 
-    _textOffset = Offset(
-      _center.dx - _textPainter.width / 2,
-      _center.dy - _textPainter.height / 2,
-    );
+    _textOffset = Offset(_center.dx - _textPainter.width / 2, _center.dy - _textPainter.height / 2);
   }
 
   @override
@@ -97,10 +84,7 @@ class PowerUpItem extends PositionComponent
   }
 
   @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollisionStart(intersectionPoints, other);
     if (!_isCollected && other is Rocket) {
       _isCollected = true;
@@ -109,4 +93,3 @@ class PowerUpItem extends PositionComponent
     }
   }
 }
-

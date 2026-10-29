@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -12,15 +13,10 @@ import 'planet.dart';
 import 'star.dart';
 
 /// Player controlled rocket component with customizable skins, Star-Power combo thrusters, and power-up shields.
-class Rocket extends PositionComponent
-    with HasGameReference<SpaceGame>, CollisionCallbacks, DragCallbacks {
+class Rocket extends PositionComponent with HasGameReference<SpaceGame>, CollisionCallbacks, DragCallbacks {
   RocketSkin skin = RocketSkin.classic;
 
-  Rocket({this.skin = RocketSkin.classic})
-      : super(
-          size: Vector2(GameConfig.rocketWidth, GameConfig.rocketHeight),
-          anchor: Anchor.center,
-        ) {
+  Rocket({this.skin = RocketSkin.classic}) : super(size: Vector2(GameConfig.rocketWidth, GameConfig.rocketHeight), anchor: Anchor.center) {
     _updatePaints();
   }
 
@@ -102,12 +98,7 @@ class Rocket extends PositionComponent
     _buildStaticPaths();
 
     // Hitbox slightly smaller than the rocket body to feel fair and kid-friendly
-    add(
-      RectangleHitbox(
-        size: Vector2(size.x * 0.7, size.y * 0.75),
-        position: Vector2(size.x * 0.15, size.y * 0.15),
-      ),
-    );
+    add(RectangleHitbox(size: Vector2(size.x * 0.7, size.y * 0.75), position: Vector2(size.x * 0.15, size.y * 0.15)));
 
     // Initial position at bottom center
     resetPosition();
@@ -140,20 +131,14 @@ class Rocket extends PositionComponent
     _rightFin.close();
 
     // Pre-create rainbow flame shader
-    _rainbowFlamePaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Colors.purpleAccent, Colors.cyanAccent, Colors.yellowAccent],
-      ).createShader(Rect.fromLTWH(0, h * 0.88, w, 24.0));
+    _rainbowFlamePaint = Paint()..shader = const LinearGradient(colors: [Colors.purpleAccent, Colors.cyanAccent, Colors.yellowAccent]).createShader(Rect.fromLTWH(0, h * 0.88, w, 24.0));
 
     _pathsBuilt = true;
   }
 
   /// Positions the rocket at the bottom center of the game view.
   void resetPosition() {
-    position = Vector2(
-      game.size.x / 2,
-      game.size.y - GameConfig.rocketBottomPadding,
-    );
+    position = Vector2(game.size.x / 2, game.size.y - GameConfig.rocketBottomPadding);
   }
 
   @override
@@ -222,10 +207,7 @@ class Rocket extends PositionComponent
   }
 
   @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollisionStart(intersectionPoints, other);
 
     if (other is Star) {
@@ -240,13 +222,7 @@ class Rocket extends PositionComponent
         other.removeFromParent();
         hasShield = false;
         game.audioManager.playHit();
-        game.add(
-          CollectEffect(
-            position: position.clone(),
-            particleColor: const Color(0xFF00E5FF),
-            particleCount: 16,
-          ),
-        );
+        game.add(CollectEffect(position: position.clone(), particleColor: const Color(0xFF00E5FF), particleCount: 16));
       } else if (!_isInvincible) {
         other.removeFromParent();
         triggerHit();
@@ -306,17 +282,8 @@ class Rocket extends PositionComponent
     canvas.drawPath(_bodyPath, _bodyPaint);
 
     // 4. Draw cockpit window
-    canvas.drawCircle(
-      Offset(w * 0.5, h * 0.36),
-      w * 0.16,
-      _windowPaint,
-    );
+    canvas.drawCircle(Offset(w * 0.5, h * 0.36), w * 0.16, _windowPaint);
 
     // Cute reflection highlight inside cockpit (reusing pre-cached _shinePaint)
-    canvas.drawCircle(
-      Offset(w * 0.46, h * 0.32),
-      w * 0.05,
-      _shinePaint,
-    );
   }
 }

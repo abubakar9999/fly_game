@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
@@ -10,13 +11,7 @@ class _Particle {
   final double size;
   Offset offset = Offset.zero;
 
-  _Particle({
-    required this.x,
-    required this.y,
-    required this.vx,
-    required this.vy,
-    required this.size,
-  });
+  _Particle({required this.x, required this.y, required this.vx, required this.vy, required this.size});
 }
 
 /// Particle burst effect when collecting stars or planets.
@@ -27,24 +22,12 @@ class CollectEffect extends PositionComponent {
   double _elapsed = 0.0;
   final Paint _paint = Paint();
 
-  CollectEffect({
-    required Vector2 position,
-    required this.particleColor,
-    int particleCount = 10,
-  }) : super(position: position) {
+  CollectEffect({required Vector2 position, required this.particleColor, int particleCount = 10}) : super(position: position) {
     final random = math.Random();
     for (int i = 0; i < particleCount; i++) {
       final angle = (i / particleCount) * math.pi * 2 + (random.nextDouble() * 0.4);
       final speed = 80.0 + random.nextDouble() * 120.0;
-      _particles.add(
-        _Particle(
-          x: 0,
-          y: 0,
-          vx: math.cos(angle) * speed,
-          vy: math.sin(angle) * speed,
-          size: 3.0 + random.nextDouble() * 3.5,
-        ),
-      );
+      _particles.add(_Particle(x: 0, y: 0, vx: math.cos(angle) * speed, vy: math.sin(angle) * speed, size: 3.0 + random.nextDouble() * 3.5));
     }
   }
 
@@ -76,4 +59,3 @@ class CollectEffect extends PositionComponent {
     }
   }
 }
-

@@ -9,13 +9,7 @@ import '../space_game.dart';
 class Planet extends PositionComponent with HasGameReference<SpaceGame> {
   final double speed;
 
-  Planet({
-    required this.speed,
-    super.position,
-  }) : super(
-          size: Vector2.all(GameConfig.planetSize),
-          anchor: Anchor.center,
-        );
+  Planet({required this.speed, super.position}) : super(size: Vector2.all(GameConfig.planetSize), anchor: Anchor.center);
 
   final Paint _planetPaint = Paint()..color = const Color(0xFF4DD0E1);
   final Paint _ringPaint = Paint()
@@ -41,20 +35,10 @@ class Planet extends PositionComponent with HasGameReference<SpaceGame> {
     _spot1 = Offset(cx - 7, cy - 6);
     _spot2 = Offset(cx + 8, cy + 5);
 
-    _ringRect = Rect.fromCenter(
-      center: _center,
-      width: size.x * 0.95,
-      height: size.y * 0.35,
-    );
+    _ringRect = Rect.fromCenter(center: _center, width: size.x * 0.95, height: size.y * 0.35);
 
     // Passive hitbox: only checks collisions against the active Rocket
-    add(
-      CircleHitbox(
-        collisionType: CollisionType.passive,
-        radius: size.x * 0.38,
-        position: Vector2(size.x * 0.12, size.y * 0.12),
-      ),
-    );
+    add(CircleHitbox(collisionType: CollisionType.passive, radius: size.x * 0.38, position: Vector2(size.x * 0.12, size.y * 0.12)));
   }
 
   @override
@@ -80,4 +64,3 @@ class Planet extends PositionComponent with HasGameReference<SpaceGame> {
     canvas.drawOval(_ringRect, _ringPaint);
   }
 }
-
