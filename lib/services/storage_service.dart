@@ -1,13 +1,16 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../game/config.dart';
 
-/// Service to persist high scores and user preferences using SharedPreferences.
+/// Service to persist high scores, unlocked stickers, and user preferences using SharedPreferences.
 class StorageService {
   static const String _keyEasy = 'highScore_easy';
   static const String _keyMedium = 'highScore_medium';
   static const String _keyHard = 'highScore_hard';
   static const String _keyMuted = 'isMuted';
   static const String _keyLanguage = 'language';
+  static const String _keyRocketSkin = 'rocket_skin';
+  static const String _keyStickers = 'unlocked_stickers';
+  static const String _keyTotalStars = 'total_stars_stardust';
 
   SharedPreferences? _prefs;
 
@@ -66,5 +69,47 @@ class StorageService {
     final prefs = await _getPrefs();
     await prefs.setString(_keyLanguage, langCode);
   }
-}
 
+  /// Gets the selected rocket skin.
+  Future<RocketSkin> getRocketSkin() async {
+    final prefs = await _getPrefs();
+    final index = prefs.getInt(_keyRocketSkin) ?? 0;
+    return RocketSkin.values[index.clamp(0, RocketSkin.values.length - 1)];
+  }
+
+  /// Saves the selected rocket skin.
+  Future<void> saveRocketSkin(RocketSkin skin) async {
+    final prefs = await _getPrefs();
+    await prefs.setInt(_keyRocketSkin, skin.index);
+  }
+
+  /// Gets unlocked sticker characters.
+  Future<Set<String>> getUnlockedStickers() async {
+    final prefs = await _getPrefs();
+    final list = prefs.getStringList(_keyStickers) ?? <String>[];
+    return list.toSet();
+  }
+
+  /// Unlocks a sticker and persists it.
+  Future<void> unlockSticker(String char) async {
+    final prefs = await _getPrefs();
+    final list = prefs.getStringList(_keyStickers) ?? <String>[];
+    if (!list.contains(char)) {
+      list.add(char);
+      await prefs.setStringList(_keyStickers, list);
+    }
+  }
+
+  /// Gets total stardust stars collected.
+  Future<int> getTotalStars() async {
+    final prefs = await _getPrefs();
+    return prefs.getInt(_keyTotalStars) ?? 0;
+  }
+
+  /// Adds stars to total stardust bank.
+  Future<void> addTotalStars(int stars) async {
+    final prefs = await _getPrefs();
+    final current = prefs.getInt(_keyTotalStars) ?? 0;
+    await prefs.setInt(_keyTotalStars, current + stars);
+  }
+}

@@ -6,18 +6,27 @@ import '../game/models/alphabet_data.dart';
 import '../services/storage_service.dart';
 import 'game_play_screen.dart';
 
-/// Modal dialog allowing kids to choose which language/alphabet world to explore.
+/// Modal dialog allowing kids to choose which language/alphabet/number world to explore.
 class LearningWorldDialog extends StatelessWidget {
   final StorageService storageService;
   final GameDifficulty difficulty;
 
-  const LearningWorldDialog({super.key, required this.storageService, required this.difficulty});
+  const LearningWorldDialog({
+    super.key,
+    required this.storageService,
+    required this.difficulty,
+  });
 
   void _launchLearningMode(BuildContext context, AlphabetType type) {
     Navigator.of(context).pop();
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => GamePlayScreen(difficulty: difficulty, storageService: storageService, gameMode: GamePlayMode.alphabetQuest, alphabetType: type),
+        builder: (_) => GamePlayScreen(
+          difficulty: difficulty,
+          storageService: storageService,
+          gameMode: GamePlayMode.alphabetQuest,
+          alphabetType: type,
+        ),
       ),
     );
   }
@@ -28,14 +37,21 @@ class LearningWorldDialog extends StatelessWidget {
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 20.0),
       child: Container(
-        padding: const EdgeInsets.all(22.0),
+        constraints: const BoxConstraints(maxHeight: 620.0),
+        padding: const EdgeInsets.all(20.0),
         decoration: BoxDecoration(
-          color: const Color(0xFF131926).withValues(alpha: 0.97),
+          color: const Color(0xFF131926).withValues(alpha: 0.98),
           borderRadius: BorderRadius.circular(28.0),
           border: Border.all(color: const Color(0xFF00E5FF), width: 2.5),
-          boxShadow: [BoxShadow(color: const Color(0xFF00E5FF).withValues(alpha: 0.25), blurRadius: 20.0, spreadRadius: 2.0)],
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
+              blurRadius: 20.0,
+              spreadRadius: 2.0,
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -45,8 +61,12 @@ class LearningWorldDialog extends StatelessWidget {
               children: [
                 const SizedBox(width: 32.0),
                 Text(
-                  isBn ? '🚀 বর্ণমালা বেছে নিন' : '🚀 Choose Alphabet World',
-                  style: const TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
+                  isBn ? '🚀 মহাকাশ শিখন জগত' : '🚀 Cosmic Learning Worlds',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 19.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded, color: Colors.white70),
@@ -54,93 +74,200 @@ class LearningWorldDialog extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16.0),
-
-            // English A-Z
-            _buildWorldCard(
-              context: context,
-              title: 'English Alphabet',
-              subtitle: 'A, B, C, D ... Z',
-              badge: 'A - Z',
-              gradientColors: [const Color(0xFF1E88E5), const Color(0xFF00E5FF)],
-              onTap: () => _launchLearningMode(context, AlphabetType.english),
-            ),
             const SizedBox(height: 12.0),
 
-            // Bangla Swaraborno
-            _buildWorldCard(
-              context: context,
-              title: 'বাংলা স্বরবর্ণ',
-              subtitle: 'অ, আ, ই, ঈ ... ঔ',
-              badge: 'অ - ঔ',
-              gradientColors: [const Color(0xFF43A047), const Color(0xFF69F0AE)],
-              onTap: () => _launchLearningMode(context, AlphabetType.banglaSwaraborno),
-            ),
-            const SizedBox(height: 12.0),
+            Flexible(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Section 1: Alphabets
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+                      child: Text(
+                        isBn ? '🔤 বর্ণমালা মিশন' : '🔤 Alphabet Missions',
+                        style: const TextStyle(
+                          color: Color(0xFFFFD54F),
+                          fontSize: 15.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
 
-            // Bangla Byanjanborno
-            _buildWorldCard(
-              context: context,
-              title: 'বাংলা ব্যঞ্জনবর্ণ',
-              subtitle: 'ক, খ, গ, ঘ ... হ',
-              badge: 'ক - হ',
-              gradientColors: [const Color(0xFF00897B), const Color(0xFF26A69A)],
-              onTap: () => _launchLearningMode(context, AlphabetType.banglaByanjanborno),
-            ),
-            const SizedBox(height: 12.0),
+                    // English A-Z
+                    _buildWorldCard(
+                      context: context,
+                      title: 'English Alphabet',
+                      subtitle: 'A, B, C, D ... Z',
+                      badge: 'A - Z',
+                      gradientColors: [const Color(0xFF1E88E5), const Color(0xFF00E5FF)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.english),
+                    ),
+                    const SizedBox(height: 10.0),
 
-            // Arabic Huruf
-            _buildWorldCard(context: context, title: 'الحروف العربية', subtitle: 'أ, ب, ت, ث ... ي', badge: 'أ - ي', gradientColors: [const Color(0xFF8E24AA), const Color(0xFFE040FB)], onTap: () => _launchLearningMode(context, AlphabetType.arabic)),
+                    // Bangla Swaraborno
+                    _buildWorldCard(
+                      context: context,
+                      title: 'বাংলা স্বরবর্ণ',
+                      subtitle: 'অ, আ, ই, ঈ ... ঔ',
+                      badge: 'অ - ঔ',
+                      gradientColors: [const Color(0xFF43A047), const Color(0xFF69F0AE)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.banglaSwaraborno),
+                    ),
+                    const SizedBox(height: 10.0),
+
+                    // Bangla Byanjanborno
+                    _buildWorldCard(
+                      context: context,
+                      title: 'বাংলা ব্যঞ্জনবর্ণ',
+                      subtitle: 'ক, খ, গ, ঘ ... হ',
+                      badge: 'ক - হ',
+                      gradientColors: [const Color(0xFF00897B), const Color(0xFF26A69A)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.banglaByanjanborno),
+                    ),
+                    const SizedBox(height: 10.0),
+
+                    // Arabic Huruf
+                    _buildWorldCard(
+                      context: context,
+                      title: 'الحروف العربية',
+                      subtitle: 'أ, ب, ت, ث ... ي',
+                      badge: 'أ - ي',
+                      gradientColors: [const Color(0xFF8E24AA), const Color(0xFFE040FB)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.arabic),
+                    ),
+                    const SizedBox(height: 18.0),
+
+                    // Section 2: Numbers
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+                      child: Text(
+                        isBn ? '🔢 সংখ্যা মিশন' : '🔢 Number Counting Missions',
+                        style: const TextStyle(
+                          color: Color(0xFFFFD54F),
+                          fontSize: 15.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    // English Numbers
+                    _buildWorldCard(
+                      context: context,
+                      title: 'Numbers (1 - 20)',
+                      subtitle: '1, 2, 3, 4 ... 20',
+                      badge: '1 - 20',
+                      gradientColors: [const Color(0xFFFF6D00), const Color(0xFFFFAB40)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.numbersEnglish),
+                    ),
+                    const SizedBox(height: 10.0),
+
+                    // Bangla Numbers
+                    _buildWorldCard(
+                      context: context,
+                      title: 'বাংলা সংখ্যা (১ - ২০)',
+                      subtitle: '১, ২, ৩, ৪ ... ২০',
+                      badge: '১ - ২০',
+                      gradientColors: [const Color(0xFF00B0FF), const Color(0xFF80D8FF)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.numbersBangla),
+                    ),
+                    const SizedBox(height: 10.0),
+
+                    // Arabic Numbers
+                    _buildWorldCard(
+                      context: context,
+                      title: 'الأرقام العربية (١ - ٢٠)',
+                      subtitle: '١, ٢, ٣, ٤ ... ٢٠',
+                      badge: '١ - ٢٠',
+                      gradientColors: [const Color(0xFFE91E63), const Color(0xFFFF4081)],
+                      onTap: () => _launchLearningMode(context, AlphabetType.numbersArabic),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildWorldCard({required BuildContext context, required String title, required String subtitle, required String badge, required List<Color> gradientColors, required VoidCallback onTap}) {
+  Widget _buildWorldCard({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required String badge,
+    required List<Color> gradientColors,
+    required VoidCallback onTap,
+  }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18.0),
+        borderRadius: BorderRadius.circular(16.0),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [gradientColors[0].withValues(alpha: 0.3), gradientColors[1].withValues(alpha: 0.15)]),
-            borderRadius: BorderRadius.circular(18.0),
+            gradient: LinearGradient(
+              colors: [
+                gradientColors[0].withValues(alpha: 0.3),
+                gradientColors[1].withValues(alpha: 0.15),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16.0),
             border: Border.all(color: gradientColors[1].withValues(alpha: 0.6), width: 1.5),
           ),
           child: Row(
             children: [
               Container(
-                width: 52.0,
-                height: 52.0,
+                width: 48.0,
+                height: 48.0,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: gradientColors),
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: gradientColors[1].withValues(alpha: 0.4), blurRadius: 8.0)],
+                  boxShadow: [
+                    BoxShadow(
+                      color: gradientColors[1].withValues(alpha: 0.4),
+                      blurRadius: 8.0,
+                    ),
+                  ],
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   badge,
-                  style: const TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
-              const SizedBox(width: 14.0),
+              const SizedBox(width: 12.0),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(color: Colors.white, fontSize: 17.0, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 2.0),
-                    Text(subtitle, style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13.0)),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 12.0,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 18.0),
+              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 16.0),
             ],
           ),
         ),

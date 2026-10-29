@@ -1,8 +1,8 @@
 import 'dart:math' as math;
-
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../services/tilt_service.dart';
 import '../services/voice_service.dart';
@@ -34,6 +34,8 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
   GameDifficulty difficulty = GameDifficulty.medium;
   DifficultyConfig difficultyConfig = DifficultyConfig.medium;
   GamePlayMode gameMode = GamePlayMode.arcade;
+  RocketSkin rocketSkin = RocketSkin.classic;
+  void Function(String sticker)? onStickerUnlocked;
 
   double speedMultiplier = 1.0;
   double _difficultyTimer = 0.0;
@@ -49,7 +51,14 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
 
   double get currentFallSpeed => difficultyConfig.baseFallSpeed * speedMultiplier;
 
-  SpaceGame({GameDifficulty? difficulty, bool? isInitiallyMuted, GamePlayMode? gameMode, AlphabetType? alphabetType}) {
+  SpaceGame({
+    GameDifficulty? difficulty,
+    bool? isInitiallyMuted,
+    GamePlayMode? gameMode,
+    AlphabetType? alphabetType,
+    RocketSkin? rocketSkin,
+    this.onStickerUnlocked,
+  }) {
     if (difficulty != null) {
       this.difficulty = difficulty;
       difficultyConfig = DifficultyConfig.of(difficulty);
@@ -63,6 +72,10 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
     }
     if (alphabetType != null) {
       alphabetManager.setType(alphabetType);
+    }
+    if (rocketSkin != null) {
+      this.rocketSkin = rocketSkin;
+      rocket.setSkin(rocketSkin);
     }
   }
 
@@ -103,18 +116,41 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
   void onStarCollected(Star star) {
     scoreManager.addScore(GameConfig.starPoints);
     audioManager.playCollect();
-    add(CollectEffect(position: star.position.clone(), particleColor: GameConfig.starColor));
+    try {
+      HapticFeedback.lightImpact();
+    } catch (_) {}
+
+    add(
+      CollectEffect(
+        position: star.position.clone(),
+        particleColor: GameConfig.starColor,
+      ),
+    );
   }
 
   void onPlanetCollected(Planet planet) {
     scoreManager.addScore(GameConfig.planetPoints);
     audioManager.playCollect();
-    add(CollectEffect(position: planet.position.clone(), particleColor: const Color(0xFF4DD0E1), particleCount: 14));
+    try {
+      HapticFeedback.mediumImpact();
+    } catch (_) {}
+
+    add(
+      CollectEffect(
+        position: planet.position.clone(),
+        particleColor: const Color(0xFF4DD0E1),
+        particleCount: 14,
+      ),
+    );
   }
 
   void onMeteorHit(Meteor meteor) {
+    rocket.resetCombo();
     shakeScreen();
     audioManager.playHit();
+    try {
+      HapticFeedback.heavyImpact();
+    } catch (_) {}
 
     final isGameOver = scoreManager.loseLife();
     if (isGameOver) {
@@ -128,12 +164,24 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
 
     final targetHit = alphabetManager.checkHit(bubble.letter);
     if (targetHit) {
-      // Correct target letter hit!
+      // Correct target hit: build combo & star-power
+      rocket.registerHitSuccess();
+      try {
+        HapticFeedback.lightImpact();
+      } catch (_) {}
+
       scoreManager.addScore(10);
       audioManager.playCollect();
-      voiceService.speakLetter(bubble.letter, type: alphabetManager.type);
+      voiceService.speakLetterWithPhonics(bubble.letter, type: alphabetManager.type);
+      onStickerUnlocked?.call(bubble.letter);
 
-      add(CollectEffect(position: bubble.position.clone(), particleColor: const Color(0xFFFFD700), particleCount: 18));
+      add(
+        CollectEffect(
+          position: bubble.position.clone(),
+          particleColor: const Color(0xFFFFD700),
+          particleCount: 18,
+        ),
+      );
 
       bubble.removeFromParent();
 
@@ -142,6 +190,10 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
       }
     } else {
       // Distractor hit: gentle playful sound without losing lives
+      rocket.resetCombo();
+      try {
+        HapticFeedback.selectionClick();
+      } catch (_) {}
       audioManager.playTap();
       bubble.removeFromParent();
     }
@@ -208,6 +260,7 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
 
     // Reset player rocket and score
     rocket.resetPosition();
+    rocket.resetCombo();
     scoreManager.reset(initialLives: difficultyConfig.initialLives);
 
     // Reset spawner and alphabet state
@@ -244,7 +297,10 @@ class SpaceGame extends FlameGame with HasCollisionDetection, PanDetector {
       if (_shakeTimer <= 0) {
         _shakeOffset.setZero();
       } else {
-        _shakeOffset.setValues((_random.nextDouble() * 2.0 - 1.0) * 8.0, (_random.nextDouble() * 2.0 - 1.0) * 8.0);
+        _shakeOffset.setValues(
+          (_random.nextDouble() * 2.0 - 1.0) * 8.0,
+          (_random.nextDouble() * 2.0 - 1.0) * 8.0,
+        );
       }
     }
 

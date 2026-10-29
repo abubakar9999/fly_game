@@ -54,6 +54,81 @@ enum GamePlayMode {
   alphabetQuest,
 }
 
+/// Unlockable rocket customization skins for children.
+enum RocketSkin {
+  classic,
+  dragon,
+  ufo,
+  candy,
+}
+
+class RocketSkinConfig {
+  final String name;
+  final String emoji;
+  final Color bodyColor;
+  final Color finColor;
+  final Color windowColor;
+  final Color flameColor;
+
+  const RocketSkinConfig({
+    required this.name,
+    required this.emoji,
+    required this.bodyColor,
+    required this.finColor,
+    required this.windowColor,
+    required this.flameColor,
+  });
+
+  static const RocketSkinConfig classic = RocketSkinConfig(
+    name: 'Classic Apollo',
+    emoji: '🚀',
+    bodyColor: Color(0xFFFF5252),
+    finColor: Color(0xFFFFD54F),
+    windowColor: Color(0xFF64B5F6),
+    flameColor: Color(0xFFFF9800),
+  );
+
+  static const RocketSkinConfig dragon = RocketSkinConfig(
+    name: 'Dragon Flame',
+    emoji: '🐲',
+    bodyColor: Color(0xFFD50000),
+    finColor: Color(0xFFFFAB00),
+    windowColor: Color(0xFFFFEB3B),
+    flameColor: Color(0xFFFF3D00),
+  );
+
+  static const RocketSkinConfig ufo = RocketSkinConfig(
+    name: 'Cosmo Saucer',
+    emoji: '🛸',
+    bodyColor: Color(0xFF00E5FF),
+    finColor: Color(0xFF76FF03),
+    windowColor: Color(0xFF00B0FF),
+    flameColor: Color(0xFF1DE9B6),
+  );
+
+  static const RocketSkinConfig candy = RocketSkinConfig(
+    name: 'Candy Pop',
+    emoji: '🍭',
+    bodyColor: Color(0xFFFF4081),
+    finColor: Color(0xFFE040FB),
+    windowColor: Color(0xFF80D8FF),
+    flameColor: Color(0xFFFF80AB),
+  );
+
+  static RocketSkinConfig of(RocketSkin skin) {
+    switch (skin) {
+      case RocketSkin.classic:
+        return classic;
+      case RocketSkin.dragon:
+        return dragon;
+      case RocketSkin.ufo:
+        return ufo;
+      case RocketSkin.candy:
+        return candy;
+    }
+  }
+}
+
 class DifficultyConfig {
   final int initialLives;
   final double baseFallSpeed;

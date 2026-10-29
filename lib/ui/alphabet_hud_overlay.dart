@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../game/models/alphabet_data.dart';
 import '../game/space_game.dart';
 
 /// HUD overlay tailored for Alphabet Learning mode with prominent target letter display.
@@ -25,40 +26,85 @@ class AlphabetHudOverlay extends StatelessWidget {
                   onPressed: () => game.pauseGame(),
                 ),
 
-                // Center Target Letter Card
+                // Center Target Letter & Phonics Card
                 ValueListenableBuilder<String>(
                   valueListenable: game.alphabetManager.targetLetterNotifier,
                   builder: (context, targetLetter, _) {
+                    final emoji = AlphabetData.getEmoji(targetLetter);
+                    final word = AlphabetData.getWord(targetLetter);
+
                     return GestureDetector(
                       onTap: () {
                         // Re-pronounce target letter on tap
-                        game.voiceService.speakLetter(targetLetter, type: game.alphabetManager.type);
+                        game.voiceService.speakLetterWithPhonics(
+                          targetLetter,
+                          type: game.alphabetManager.type,
+                        );
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E2638).withValues(alpha: 0.9),
+                          color: const Color(0xFF1E2638).withValues(alpha: 0.92),
                           borderRadius: BorderRadius.circular(20.0),
-                          border: Border.all(color: const Color(0xFFFFD54F), width: 2.5),
-                          boxShadow: [BoxShadow(color: const Color(0xFFFFD54F).withValues(alpha: 0.35), blurRadius: 12.0, spreadRadius: 2.0)],
+                          border: Border.all(
+                            color: const Color(0xFFFFD54F),
+                            width: 2.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD54F).withValues(alpha: 0.35),
+                              blurRadius: 12.0,
+                              spreadRadius: 2.0,
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Text(
                               '🎯 Catch: ',
-                              style: TextStyle(color: Color(0xFF90CAF9), fontSize: 16.0, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Color(0xFF90CAF9),
+                                fontSize: 15.0,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
-                              decoration: BoxDecoration(color: const Color(0xFFFFD54F), borderRadius: BorderRadius.circular(10.0)),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD54F),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                               child: Text(
                                 targetLetter,
-                                style: const TextStyle(color: Colors.black, fontSize: 26.0, fontWeight: FontWeight.w900),
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 26.0,
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
                             ),
+                            if (emoji.isNotEmpty) ...[
+                              const SizedBox(width: 8.0),
+                              Text(emoji, style: const TextStyle(fontSize: 22.0)),
+                            ],
+                            if (word.isNotEmpty) ...[
+                              const SizedBox(width: 6.0),
+                              Text(
+                                word,
+                                style: const TextStyle(
+                                  color: Color(0xFF90CAF9),
+                                  fontSize: 14.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                             const SizedBox(width: 8.0),
-                            const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD54F), size: 22.0),
+                            const Icon(
+                              Icons.volume_up_rounded,
+                              color: Color(0xFFFFD54F),
+                              size: 22.0,
+                            ),
                           ],
                         ),
                       ),
@@ -76,7 +122,11 @@ class AlphabetHudOverlay extends StatelessWidget {
                         const SizedBox(width: 4.0),
                         Text(
                           '$score',
-                          style: const TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     );
@@ -100,13 +150,21 @@ class AlphabetHudOverlay extends StatelessWidget {
                       child: SizedBox(
                         height: 8.0,
                         width: 220.0,
-                        child: LinearProgressIndicator(value: progress, backgroundColor: Colors.white.withValues(alpha: 0.15), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00E676))),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.white.withValues(alpha: 0.15),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4.0),
                     Text(
                       '$currentStep / $total',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12.0, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 );

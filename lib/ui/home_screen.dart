@@ -5,6 +5,8 @@ import '../game/config.dart';
 import '../services/storage_service.dart';
 import 'game_play_screen.dart';
 import 'learning_world_dialog.dart';
+import 'rocket_hangar_dialog.dart';
+import 'sticker_album_dialog.dart';
 
 /// Main menu screen with difficulty selector and settings.
 class HomeScreen extends StatefulWidget {
@@ -18,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   GameDifficulty _selectedDifficulty = GameDifficulty.medium;
+  RocketSkin _selectedSkin = RocketSkin.classic;
   int _highScore = 0;
   bool _isMuted = false;
 
@@ -30,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadSettings() async {
     final muted = await widget.storageService.getIsMuted();
     final lang = await widget.storageService.getLanguage();
+    final skin = await widget.storageService.getRocketSkin();
     if (lang == 'bn') {
       GameStrings.setLanguage(AppLanguage.bn);
     } else {
@@ -41,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isMuted = muted;
         _highScore = hs;
+        _selectedSkin = skin;
       });
     }
   }
@@ -82,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (_) => GamePlayScreen(
           difficulty: _selectedDifficulty,
           storageService: widget.storageService,
+          rocketSkin: _selectedSkin,
         ),
       ),
     ).then((_) {
@@ -96,6 +102,29 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (_) => LearningWorldDialog(
         storageService: widget.storageService,
         difficulty: _selectedDifficulty,
+      ),
+    );
+  }
+
+  void _openHangar() {
+    showDialog(
+      context: context,
+      builder: (_) => RocketHangarDialog(
+        storageService: widget.storageService,
+        onSkinSelected: (skin) {
+          setState(() {
+            _selectedSkin = skin;
+          });
+        },
+      ),
+    );
+  }
+
+  void _openStickerAlbum() {
+    showDialog(
+      context: context,
+      builder: (_) => StickerAlbumDialog(
+        storageService: widget.storageService,
       ),
     );
   }
@@ -252,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(width: 8.0),
                               Text(
                                 GameStrings.currentLanguage == AppLanguage.bn
-                                    ? 'বর্ণমালা মিশন 🔤'
+                                    ? 'বর্ণমালা ও সংখ্যা 🔤'
                                     : 'Alphabet Quest 🔤',
                                 style: const TextStyle(
                                   fontSize: 18.0,
@@ -262,6 +291,54 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 10.0),
+
+                      // Hangar & Sticker Album Row
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(0, 48.0),
+                                foregroundColor: Colors.white,
+                                side: const BorderSide(color: Color(0xFFFF9800), width: 1.5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16.0),
+                                ),
+                              ),
+                              onPressed: _openHangar,
+                              icon: const Icon(Icons.rocket_rounded, color: Color(0xFFFF9800), size: 20.0),
+                              label: Text(
+                                GameStrings.currentLanguage == AppLanguage.bn
+                                    ? 'হ্যাঙ্গার 🛸'
+                                    : 'Hangar 🛸',
+                                style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10.0),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(0, 48.0),
+                                foregroundColor: Colors.white,
+                                side: const BorderSide(color: Color(0xFFFFD54F), width: 1.5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16.0),
+                                ),
+                              ),
+                              onPressed: _openStickerAlbum,
+                              icon: const Icon(Icons.star_rounded, color: Color(0xFFFFD54F), size: 20.0),
+                              label: Text(
+                                GameStrings.currentLanguage == AppLanguage.bn
+                                    ? 'অ্যালবাম 📖'
+                                    : 'Stickers 📖',
+                                style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

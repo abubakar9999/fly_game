@@ -37,6 +37,23 @@ class VoiceService {
     }
   }
 
+  /// Speaks the letter followed by its associated phonics word (e.g. "A... Apple!")
+  Future<void> speakLetterWithPhonics(String letter, {AlphabetType type = AlphabetType.english}) async {
+    if (isMuted) return;
+    try {
+      if (!_isInitialized) {
+        await init();
+      }
+      final langCode = AlphabetData.getLanguageCode(type);
+      await _flutterTts.setLanguage(langCode);
+      final word = AlphabetData.getWord(letter);
+      final spoken = word.isNotEmpty ? '$letter, $word' : letter;
+      await _flutterTts.speak(spoken);
+    } catch (e) {
+      debugPrint('VoiceService: speakLetterWithPhonics skipped ($e)');
+    }
+  }
+
   /// Speaks a celebratory prompt or friendly encouragement.
   Future<void> speakText(String text, {AlphabetType type = AlphabetType.english}) async {
     if (isMuted) return;
@@ -58,4 +75,3 @@ class VoiceService {
     } catch (_) {}
   }
 }
-

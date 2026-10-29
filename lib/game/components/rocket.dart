@@ -10,14 +10,18 @@ import 'meteor.dart';
 import 'planet.dart';
 import 'star.dart';
 
-/// Player controlled rocket component.
+/// Player controlled rocket component with customizable skins and Star-Power combo thrusters.
 class Rocket extends PositionComponent
     with HasGameReference<SpaceGame>, CollisionCallbacks, DragCallbacks {
-  Rocket()
+  RocketSkin skin = RocketSkin.classic;
+
+  Rocket({this.skin = RocketSkin.classic})
       : super(
           size: Vector2(GameConfig.rocketWidth, GameConfig.rocketHeight),
           anchor: Anchor.center,
-        );
+        ) {
+    _updatePaints();
+  }
 
   // Invincibility & blink state
   bool _isInvincible = false;
@@ -25,17 +29,43 @@ class Rocket extends PositionComponent
   double _blinkTimer = 0.0;
   bool _isVisible = true;
 
-  // Flame animation timer
+  // Flame animation timer & combo streak
   double _flameTime = 0.0;
+  int comboStreak = 0;
+  bool get isStarPower => comboStreak >= 3;
 
-  // Reusable paints to avoid allocations in render
-  final Paint _bodyPaint = Paint()..color = GameConfig.rocketBodyColor;
-  final Paint _windowPaint = Paint()..color = GameConfig.rocketWindowColor;
-  final Paint _finPaint = Paint()..color = GameConfig.rocketFinColor;
-  final Paint _flamePaint = Paint()..color = GameConfig.flameColor;
+  // Reusable paints
+  late Paint _bodyPaint;
+  late Paint _windowPaint;
+  late Paint _finPaint;
+  late Paint _flamePaint;
   final Paint _flameInnerPaint = Paint()..color = Colors.yellowAccent;
+  final Paint _starPowerGlow = Paint()
+    ..color = const Color(0xFFFFD700).withValues(alpha: 0.4)
+    ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10.0);
 
   bool get isInvincible => _isInvincible;
+
+  void setSkin(RocketSkin newSkin) {
+    skin = newSkin;
+    _updatePaints();
+  }
+
+  void _updatePaints() {
+    final cfg = RocketSkinConfig.of(skin);
+    _bodyPaint = Paint()..color = cfg.bodyColor;
+    _windowPaint = Paint()..color = cfg.windowColor;
+    _finPaint = Paint()..color = cfg.finColor;
+    _flamePaint = Paint()..color = cfg.flameColor;
+  }
+
+  void registerHitSuccess() {
+    comboStreak++;
+  }
+
+  void resetCombo() {
+    comboStreak = 0;
+  }
 
   @override
   Future<void> onLoad() async {
@@ -74,6 +104,7 @@ class Rocket extends PositionComponent
     _invincibilityTimer = GameConfig.invincibilityDuration;
     _blinkTimer = 0.0;
     _isVisible = true;
+    resetCombo();
   }
 
   @override
@@ -153,14 +184,28 @@ class Rocket extends PositionComponent
     final w = size.x;
     final h = size.y;
 
-    // 1. Draw animated thruster flame
-    final flameFlicker = math.sin(_flameTime).abs() * 6.0;
+    // Draw Star-Power cosmic aura when combo >= 3
+    if (isStarPower) {
+      canvas.drawCircle(Offset(w * 0.5, h * 0.5), w * 0.65, _starPowerGlow);
+    }
+
+    // 1. Draw animated thruster flame (Rainbow boosted if in Star-Power!)
+    final flameFlicker = math.sin(_flameTime).abs() * (isStarPower ? 12.0 : 6.0);
+    final flameExtraLength = isStarPower ? 14.0 : 8.0;
+
+    final flamePaint = isStarPower
+        ? (Paint()
+          ..shader = const LinearGradient(
+            colors: [Colors.purpleAccent, Colors.cyanAccent, Colors.yellowAccent],
+          ).createShader(Rect.fromLTWH(0, h * 0.88, w, 24.0)))
+        : _flamePaint;
+
     final flamePath = Path()
       ..moveTo(w * 0.35, h * 0.88)
-      ..lineTo(w * 0.5, h + 8.0 + flameFlicker)
+      ..lineTo(w * 0.5, h + flameExtraLength + flameFlicker)
       ..lineTo(w * 0.65, h * 0.88)
       ..close();
-    canvas.drawPath(flamePath, _flamePaint);
+    canvas.drawPath(flamePath, flamePaint);
 
     final innerFlamePath = Path()
       ..moveTo(w * 0.42, h * 0.90)
@@ -198,6 +243,16 @@ class Rocket extends PositionComponent
       Offset(w * 0.5, h * 0.36),
       w * 0.16,
       _windowPaint,
+    );
+
+    // Cute reflection highlight inside cockpit
+    final shinePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.6)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+      Offset(w * 0.46, h * 0.32),
+      w * 0.05,
+      shinePaint,
     );
   }
 }

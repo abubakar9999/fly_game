@@ -17,8 +17,16 @@ class GamePlayScreen extends StatefulWidget {
   final StorageService storageService;
   final GamePlayMode gameMode;
   final AlphabetType alphabetType;
+  final RocketSkin rocketSkin;
 
-  const GamePlayScreen({super.key, required this.difficulty, required this.storageService, this.gameMode = GamePlayMode.arcade, this.alphabetType = AlphabetType.english});
+  const GamePlayScreen({
+    super.key,
+    required this.difficulty,
+    required this.storageService,
+    this.gameMode = GamePlayMode.arcade,
+    this.alphabetType = AlphabetType.english,
+    this.rocketSkin = RocketSkin.classic,
+  });
 
   @override
   State<GamePlayScreen> createState() => _GamePlayScreenState();
@@ -30,7 +38,15 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
   @override
   void initState() {
     super.initState();
-    _game = SpaceGame(difficulty: widget.difficulty, gameMode: widget.gameMode, alphabetType: widget.alphabetType);
+    _game = SpaceGame(
+      difficulty: widget.difficulty,
+      gameMode: widget.gameMode,
+      alphabetType: widget.alphabetType,
+      rocketSkin: widget.rocketSkin,
+      onStickerUnlocked: (char) {
+        widget.storageService.unlockSticker(char);
+      },
+    );
 
     _initializeSettings();
 
@@ -44,6 +60,9 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
 
     final highScore = await widget.storageService.getHighScore(widget.difficulty);
     _game.scoreManager.setHighScore(highScore);
+
+    final savedSkin = await widget.storageService.getRocketSkin();
+    _game.rocket.setSkin(savedSkin);
   }
 
   void _onHighScoreChanged() {
@@ -63,7 +82,9 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
       backgroundColor: const Color(0xFF0B0E14),
       body: GameWidget<SpaceGame>(
         game: _game,
-        initialActiveOverlays: [widget.gameMode == GamePlayMode.alphabetQuest ? 'alphabet_hud' : 'hud'],
+        initialActiveOverlays: [
+          widget.gameMode == GamePlayMode.alphabetQuest ? 'alphabet_hud' : 'hud',
+        ],
         overlayBuilderMap: {
           'hud': (context, game) => HudOverlay(game: game),
           'alphabet_hud': (context, game) => AlphabetHudOverlay(game: game),
